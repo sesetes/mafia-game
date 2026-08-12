@@ -1,0 +1,75 @@
+@import url('https://fonts.googleapis.com/css2?family=Cairo:wght@400;700;900&display=swap');
+
+* { box-sizing: border-box; font-family: 'Cairo', sans-serif; }
+
+body {
+  background-color: #0f172a;
+  color: #ffffff;
+  margin: 0;
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  min-height: 100vh;
+  direction: rtl;
+  padding: 20px 0;
+}
+
+.game-container {
+  background-color: #1e293b;
+  padding: 25px;
+  border-radius: 20px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.6);
+  width: 95%;
+  max-width: 550px;
+  text-align: center;
+}
+
+h1, h2, h3, p { margin: 0 0 10px 0; }
+h1 { color: #f43f5e; }
+p { color: #94a3b8; font-size: 16px; }
+
+.input-field { width: 100%; padding: 12px; margin-bottom: 15px; border: 2px solid #334155; border-radius: 10px; background-color: #0f172a; color: white; font-size: 16px; text-align: center; outline: none; }
+.btn { width: 100%; padding: 12px; font-size: 16px; font-weight: bold; border: none; border-radius: 10px; cursor: pointer; margin-bottom: 10px; transition: 0.2s; }
+.btn-create { background-color: #f43f5e; color: white; }
+.btn-join { background-color: #3b82f6; color: white; }
+.btn-start { background-color: #10b981; color: white; margin-top: 15px; }
+.btn-action { background-color: #8b5cf6; color: white; margin-top: 10px; }
+
+.role-badge { display: inline-block; padding: 6px 16px; border-radius: 20px; font-weight: bold; margin-bottom: 20px; font-size: 18px; }
+.role-مافيا { background-color: #ef4444; color: white; }
+.role-طبيب { background-color: #06b6d4; color: white; }
+.role-محقق { background-color: #f59e0b; color: white; }
+.role-مواطن { background-color: #10b981; color: white; }
+
+.target-select { width: 100%; padding: 12px; border-radius: 8px; background-color: #0f172a; color: white; font-size: 16px; margin: 10px 0; border: 1px solid #334155; }
+
+.vote-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background-color: #334155;
+  padding: 12px;
+  margin: 8px 0;
+  border-radius: 8px;
+  transition: 0.3s;
+  border: 2px solid transparent;
+}
+
+/* شلنا التجميد حتى يقدر يغير صوته بس خلينا اللون يبهت للي ما مختارهم */
+.vote-item.dimmed { opacity: 0.6; }
+.vote-item.selected { border: 2px solid #10b981; background-color: #1e293b; opacity: 1; }
+
+.voter-tag { display: inline-block; font-size: 11px; background: #0f172a; padding: 2px 6px; border-radius: 4px; margin-left: 4px; color: #94a3b8; }
+.vote-btn { background-color: #ef4444; color: white; border: none; padding: 6px 12px; border-radius: 6px; cursor: pointer; font-weight: bold; }
+
+.chat-container { background-color: #0f172a; border: 1px solid #334155; border-radius: 12px; padding: 10px; margin-top: 20px; text-align: right;}
+.chat-title { font-size: 14px; color: #94a3b8; margin-bottom: 8px; border-bottom: 1px solid #334155; padding-bottom: 5px; }
+.chat-box { max-height: 150px; overflow-y: auto; display: flex; flex-direction: column; gap: 8px; margin-bottom: 10px; padding-right: 5px; }
+.chat-msg { padding: 8px 12px; border-radius: 12px; font-size: 14px; width: fit-content; max-width: 90%; word-wrap: break-word; }
+.msg-global { background-color: #334155; color: white; }
+.msg-mine { background-color: #3b82f6; color: white; align-self: flex-start; }
+.msg-mafia { background-color: #7f1d1d; color: #fca5a5; }
+.msg-system { background-color: #450a0a; color: #fca5a5; width: 100%; text-align: center; font-weight: bold;}
+.chat-input-area { display: flex; gap: 8px; }
+.chat-input { flex: 1; padding: 8px 12px; border-radius: 8px; border: 1px solid #334155; background-color: #1e293b; color: white; outline: none; }
+.chat-send-btn { background-color: #10b981; border: none; padding: 8px 15px; border-radius: 8px; color: white; cursor: pointer; font-weight: bold; }
