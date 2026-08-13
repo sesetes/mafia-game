@@ -32,6 +32,7 @@ function App() {
   const [globalMsg, setGlobalMsg] = useState('');
   const [mafiaMsg, setMafiaMsg] = useState('');
   
+  // === متغيرات الوصية ===
   const [wills, setWills] = useState({});
   const [recentlyDead, setRecentlyDead] = useState('');
   const [myWill, setMyWill] = useState('');
@@ -41,12 +42,14 @@ function App() {
   const globalChatRef = useRef(null);
   const mafiaChatRef = useRef(null);
 
+  // تعريف الأصوات
   const nightSound = useRef(new Audio('/night.mp3'));
   const daySound = useRef(new Audio('/day.mp3')); 
   const defenseSound = useRef(new Audio('/defense.mp3'));
   const gunSound = useRef(new Audio('/gun.mp3'));
   const ambulanceSound = useRef(new Audio('/ambulance.mp3'));
   const flipSound = useRef(new Audio('/flip.mp3'));
+  const votingSound = useRef(new Audio('/voting.mp3')); // الصوت الجديد للتصويت
 
   useEffect(() => {
     const savedSession = sessionStorage.getItem('mafiaGameSession');
@@ -70,20 +73,26 @@ function App() {
     nightSound.current.loop = true; nightSound.current.volume = 0.6;
     daySound.current.loop = true; daySound.current.volume = 0.4; 
     defenseSound.current.loop = true; defenseSound.current.volume = 0.5;
+    votingSound.current.loop = true; votingSound.current.volume = 0.4; // تكرار ومستوى صوت التصويت
   }, []);
 
   const unlockAudio = () => {
-    [nightSound.current, daySound.current, defenseSound.current, flipSound.current].forEach(a => a.play().then(()=>a.pause()).catch(()=>{}));
+    [nightSound.current, daySound.current, defenseSound.current, flipSound.current, votingSound.current].forEach(a => a.play().then(()=>a.pause()).catch(()=>{}));
   };
 
   useEffect(() => {
-    nightSound.current.pause(); daySound.current.pause(); defenseSound.current.pause();
+    // إيقاف كل الأصوات قبل تشغيل الصوت الجديد
+    nightSound.current.pause(); daySound.current.pause(); defenseSound.current.pause(); votingSound.current.pause();
+    
     if (phase === 'night') {
       nightSound.current.play().catch(()=>{});
       setTimeout(() => gunSound.current.play().catch(()=>{}), 20000);
       setTimeout(() => ambulanceSound.current.play().catch(()=>{}), 25000);
     } else if (phase === 'day_result') {
       daySound.current.play().catch(()=>{});
+    } else if (phase === 'voting') {
+      // تشغيل صوت التصويت فقط في هاي المرحلة
+      votingSound.current.play().catch(()=>{});
     } else if (phase === 'defense') {
       defenseSound.current.play().catch(()=>{});
     } else if (phase === 'role_reveal') {
@@ -145,6 +154,7 @@ function App() {
     await updateDoc(doc(db, "rooms", roomDocId), { phase: "waiting", alive: players, roles: {}, nightActions: { mafia: '', doctor: '', detective: '' }, votes: {}, nightLog: '', winner: '', targetTime: 0, actedPlayers: [], mafiaChat: [], globalChat: [], defendingPlayer: '', nightCount: 1, wills: {}, recentlyDead: '', willNextPhase: '', willSkippers: [] });
   }
 
+  // دالة حفظ الوصية (أو التخطي)
   const saveWill = async (type = 'normal') => {
     const finalWill = type === 'skip' ? 'لا توجد وصية...' : (myWill.trim() || 'لا توجد وصية...');
     await updateDoc(doc(db, "rooms", roomDocId), {
@@ -153,6 +163,7 @@ function App() {
     setIsWillSaved(true);
   };
 
+  // دالة تخطي قراءة الوصية
   const skipWillReading = async () => {
     if (!willSkippers.includes(playerName)) {
       await updateDoc(doc(db, "rooms", roomDocId), {
@@ -240,7 +251,7 @@ function App() {
     return null;
   }
 
-  // === حل جذري لمشكلة اختفاء الاختيارات (Race Condition Fix) ===
+  // حل جذري لمشكلة اختفاء الاختيارات (Race Condition Fix)
   const submitNightAction = async () => {
     if (!selectedTarget) return alert("اختار هدفك!");
     
@@ -254,7 +265,6 @@ function App() {
       }
     }
     
-    // إرسال البيانات مباشرة لقاعدة البيانات بدون قراءتها لتجنب تداخل الاختيارات
     await updateDoc(doc(db, "rooms", roomDocId), { 
       [field]: selectedTarget, 
       actedPlayers: arrayUnion(playerName) 
@@ -262,7 +272,6 @@ function App() {
   }
 
   const castVote = async (target) => {
-    // حل مشكلة تداخل الأصوات لو صوتوا بنفس اللحظة
     await updateDoc(doc(db, "rooms", roomDocId), { 
       [`votes.${playerName}`]: target 
     });
@@ -328,7 +337,7 @@ function App() {
     }
   }, [roomDocId, playerName]);
 
-  // === التخطي الذكي الشامل: ينهي الوقت فوراً إذا اكتمل العدد (للأدوار، الوصية، والتصويت) ===
+  // === التخطي الذكي الشامل ===
   useEffect(() => {
     if (players.length > 0 && players[0] === playerName) { 
       if (phase === 'write_will' && Object.keys(wills).length === players.length) {
@@ -359,7 +368,6 @@ function App() {
         if (left <= 0) {
           setTimeLeft(0); clearInterval(interval);
           if (players[0] === playerName) {
-            // سحب أحدث بيانات من القاعدة قبل إصدار أي قرار لضمان الدقة 100%
             const docSnap = await getDocs(query(collection(db, "rooms"), where("roomCode", "==", roomId)));
             let data; docSnap.forEach(d => data = d.data());
             
