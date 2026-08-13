@@ -35,7 +35,6 @@ function App() {
   const globalChatRef = useRef(null);
   const mafiaChatRef = useRef(null);
 
-  // الأصوات
   const nightSound = useRef(new Audio('/night.mp3'));
   const daySound = useRef(new Audio('/day.mp3'));
   const defenseSound = useRef(new Audio('/defense.mp3'));
@@ -123,7 +122,6 @@ function App() {
     let news = [];
     let counter = 1;
 
-    // المافيا والطبيب
     if (!mafia || mafia === 'skip') {
       news.push(`${counter++}. المافيا تتريث ولا تتحرك لسفك الدماء.`);
     } else if (mafia === doctor) {
@@ -136,7 +134,6 @@ function App() {
       }
     }
 
-    // المحقق
     if (detective && detective !== 'skip') {
         if (data.roles[detective] === 'مافيا') {
             news.push(`${counter++}. توجد لدى المحقق أخبار سعيدة للشعب!`);
@@ -213,6 +210,7 @@ function App() {
     if (Object.keys(newVotes).length >= data.alive.length && phase === 'voting') performVoteResolution(roomDocId, { ...data, votes: newVotes });
   }
   const withdrawVote = async () => { await updateDoc(doc(db, "rooms", roomDocId), { [`votes.${playerName}`]: deleteField() }); }
+  
   const detectiveSacrifice = async () => {
     if (!sacrificeTarget) return alert("اختار المتهم!");
     if (!window.confirm("متأكد؟ راح تطلع من اللعبة!")) return;
@@ -223,6 +221,7 @@ function App() {
     const sysMsg = `🚨 المحقق (${playerName}) كشف أن (${sacrificeTarget}) هو ${data.roles[sacrificeTarget] === 'مافيا' ? 'مافيا 🦹‍♂️!' : 'ليس مافيا 😇!'} وخرج من اللعبة.`;
     await updateDoc(doc(db, "rooms", roomDocId), { alive: newAlive, phase: winState ? 'game_over' : data.phase, winner: winState || data.winner, globalChat: arrayUnion({ sender: 'النظام ⚖️', text: sysMsg }) });
   }
+  
   const sendGlobal = async () => { if(!globalMsg.trim() || !isAlive) return; await updateDoc(doc(db, "rooms", roomDocId), { globalChat: arrayUnion({ sender: playerName, text: globalMsg }) }); setGlobalMsg(''); }
   const sendMafia = async (t=null) => { let m = t || mafiaMsg; if(!m.trim() || !isAlive) return; await updateDoc(doc(db, "rooms", roomDocId), { mafiaChat: arrayUnion({ sender: playerName, text: m }) }); setMafiaMsg(''); }
 
@@ -300,11 +299,32 @@ function App() {
           )}
 
           {phase === 'role_reveal' && (
-            <div style={{ padding: '20px', backgroundColor: '#0f172a', borderRadius: '15px', border: '2px dashed #475569' }}>
+            <div style={{ padding: '20px', backgroundColor: '#0f172a', borderRadius: '15px', border: '2px dashed #475569', textAlign: 'center' }}>
               <h1>🎭 أهلاً بك في مدينة المافيا!</h1>
-              <p>تم توزيع الأدوار بسرية تامة...</p>
-              <div className={`role-badge role-${myRole}`} style={{ fontSize: '30px', padding: '15px 30px', margin: '20px 0' }}>أنت: {myRole}</div>
-              {myRole === 'مافيا' && myMafiaMates.length > 0 && <h3 style={{ color: '#fca5a5' }}>🤝 زميلك في المافيا هو: {myMafiaMates.join(' و ')}</h3>}
+              <p>تم توزيع الأدوار، جاري كشف هويتك...</p>
+
+              {/* الكارت الـ 3D المحدث لكل الأدوار */}
+              <div className="card-3d-container">
+                <div className="card-3d">
+                  <div className="card-face card-front">
+                    <div className="role-icon">❓</div>
+                    <div style={{fontSize: '20px'}}>بطاقتك</div>
+                  </div>
+                  <div className={`card-face card-back`} style={{ 
+                    borderColor: myRole === 'مافيا' ? '#ef4444' : myRole === 'طبيب' ? '#10b981' : myRole === 'محقق' ? '#3b82f6' : '#f59e0b',
+                    boxShadow: myRole === 'مافيا' ? '0 0 30px rgba(239, 68, 68, 0.6)' : myRole === 'طبيب' ? '0 0 30px rgba(16, 185, 129, 0.6)' : myRole === 'محقق' ? '0 0 30px rgba(59, 130, 246, 0.6)' : '0 0 30px rgba(245, 158, 11, 0.6)'
+                  }}>
+                    <div className="role-icon">
+                      {myRole === 'مافيا' ? '🦹‍♂️' : myRole === 'طبيب' ? '👨‍⚕️' : myRole === 'محقق' ? '🕵️‍♂️' : '😇'}
+                    </div>
+                    <div style={{ fontSize: '24px', fontWeight: 'bold', color: myRole === 'مواطن' ? '#fde68a' : 'inherit' }}>
+                      أنت: {myRole}
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {myRole === 'مافيا' && myMafiaMates.length > 0 && <h3 style={{ color: '#fca5a5', marginTop: '15px' }}>🤝 زميلك في المافيا هو: {myMafiaMates.join(' و ')}</h3>}
               <h2 style={{ color: '#10b981', marginTop: '20px' }}>⏳ ستبدأ الليلة الأولى بعد {timeLeft} ثانية...</h2>
             </div>
           )}
@@ -438,7 +458,6 @@ function App() {
               <div>
                 <h1>🎉 انتهاء اللعبة!</h1>
                 <h2>الفائز هم: <span style={{ color: '#10b981' }}>{winner}</span></h2>
-                
                 {players[0] === playerName ? (
                   <button onClick={restartGame} className="btn btn-start" style={{ marginTop: '20px' }}>
                     🔄 إعادة اللعب (نفس اللاعبين)
