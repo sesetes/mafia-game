@@ -36,10 +36,30 @@ function App() {
   const mafiaChatRef = useRef(null);
 
   const nightSound = useRef(new Audio('/night.mp3'));
-  const daySound = useRef(new Audio('/day.mp3'));
+  const daySound = useRef(new Audio('/day.mp3')); 
   const defenseSound = useRef(new Audio('/defense.mp3'));
   const gunSound = useRef(new Audio('/gun.mp3'));
   const ambulanceSound = useRef(new Audio('/ambulance.mp3'));
+  const flipSound = useRef(new Audio('/flip.mp3'));
+
+  // التعديل هنا: استخدام sessionStorage بدلاً من localStorage
+  useEffect(() => {
+    const savedSession = sessionStorage.getItem('mafiaGameSession');
+    if (savedSession) {
+      const data = JSON.parse(savedSession);
+      setPlayerName(data.playerName);
+      setRoomId(data.roomId);
+      setRoomDocId(data.roomDocId);
+      setInRoom(true);
+    }
+  }, []);
+
+  const leaveRoom = () => {
+    if (window.confirm("هل أنت متأكد أنك تريد الخروج من الغرفة؟")) {
+      sessionStorage.removeItem('mafiaGameSession');
+      window.location.reload(); 
+    }
+  };
 
   useEffect(() => {
     nightSound.current.loop = true; nightSound.current.volume = 0.6;
@@ -48,7 +68,7 @@ function App() {
   }, []);
 
   const unlockAudio = () => {
-    [nightSound.current, daySound.current, defenseSound.current].forEach(a => a.play().then(()=>a.pause()).catch(()=>{}));
+    [nightSound.current, daySound.current, defenseSound.current, flipSound.current].forEach(a => a.play().then(()=>a.pause()).catch(()=>{}));
   };
 
   useEffect(() => {
@@ -57,10 +77,14 @@ function App() {
       nightSound.current.play().catch(()=>{});
       setTimeout(() => gunSound.current.play().catch(()=>{}), 20000);
       setTimeout(() => ambulanceSound.current.play().catch(()=>{}), 25000);
-    } else if (phase === 'day_result' || phase === 'voting') {
+    } else if (phase === 'day_result') {
       daySound.current.play().catch(()=>{});
     } else if (phase === 'defense') {
       defenseSound.current.play().catch(()=>{});
+    } else if (phase === 'role_reveal') {
+      setTimeout(() => {
+        flipSound.current.play().catch(()=>{});
+      }, 1000);
     }
   }, [phase]);
 
@@ -80,6 +104,7 @@ function App() {
         nightLog: '', winner: '', targetTime: 0, actedPlayers: [], mafiaChat: [], globalChat: [], defendingPlayer: '', nightCount: 1
       });
       setRoomId(randomCode); setRoomDocId(docRef.id); setInRoom(true);
+      sessionStorage.setItem('mafiaGameSession', JSON.stringify({ playerName, roomId: randomCode, roomDocId: docRef.id }));
     } catch (error) { alert("خطأ بالإنشاء."); }
   }
 
@@ -96,6 +121,7 @@ function App() {
       setRoomDocId(docId);
       await updateDoc(doc(db, "rooms", docId), { players: arrayUnion(playerName), alive: arrayUnion(playerName) });
       setRoomId(joinCode); setInRoom(true);
+      sessionStorage.setItem('mafiaGameSession', JSON.stringify({ playerName, roomId: joinCode, roomDocId: docId }));
     } catch (error) { alert("خطأ بالانضمام!"); }
   }
 
@@ -145,7 +171,7 @@ function App() {
     const logMsg = news.join('\n'); 
     const winState = checkWin(newAlive, data.roles);
     await updateDoc(doc(db, "rooms", docId), {
-      alive: newAlive, phase: winState ? 'game_over' : 'day_result', nightLog: logMsg,
+      alive: newAlive, phase: winState ? 'game_over' : 'day_result', log: logMsg, nightLog: logMsg,
       winner: winState || '', nightActions: { mafia: '', doctor: '', detective: '' },
       actedPlayers: [], targetTime: winState ? 0 : Date.now() + 20000, mafiaChat: [] 
     });
@@ -238,6 +264,9 @@ function App() {
           setNightCount(data.nightCount || 1); 
           if (data.roles && data.roles[playerName]) setMyRole(data.roles[playerName]);
           if (data.phase !== 'night') { setInvestigateResult(''); setSelectedTarget(''); }
+        } else {
+           sessionStorage.removeItem('mafiaGameSession');
+           setInRoom(false);
         }
       });
       return () => unsub();
@@ -290,6 +319,12 @@ function App() {
         </div>
       ) : (
         <div>
+          <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: '10px' }}>
+            <button onClick={leaveRoom} style={{ backgroundColor: 'transparent', border: '1px solid #ef4444', padding: '5px 15px', borderRadius: '8px', color: '#ef4444', cursor: 'pointer', transition: 'all 0.3s' }}>
+              خروج من الغرفة 🚪
+            </button>
+          </div>
+
           {phase === 'waiting' && <h2>⏳ كود الغرفة: <span style={{ color: '#f43f5e' }}>{roomId}</span></h2>}
           {phase !== 'waiting' && phase !== 'game_over' && phase !== 'role_reveal' && (
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '15px' }}>
@@ -303,7 +338,6 @@ function App() {
               <h1>🎭 أهلاً بك في مدينة المافيا!</h1>
               <p>تم توزيع الأدوار، جاري كشف هويتك...</p>
 
-              {/* الكارت الـ 3D المحدث لكل الأدوار */}
               <div className="card-3d-container">
                 <div className="card-3d">
                   <div className="card-face card-front">
