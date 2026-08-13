@@ -32,12 +32,11 @@ function App() {
   const [globalMsg, setGlobalMsg] = useState('');
   const [mafiaMsg, setMafiaMsg] = useState('');
   
-  // === متغيرات الوصية ===
   const [wills, setWills] = useState({});
   const [recentlyDead, setRecentlyDead] = useState('');
   const [myWill, setMyWill] = useState('');
   const [isWillSaved, setIsWillSaved] = useState(false);
-  const [willSkippers, setWillSkippers] = useState([]); // قائمة اللي ضغطوا تخطي القراءة
+  const [willSkippers, setWillSkippers] = useState([]);
   
   const globalChatRef = useRef(null);
   const mafiaChatRef = useRef(null);
@@ -146,7 +145,6 @@ function App() {
     await updateDoc(doc(db, "rooms", roomDocId), { phase: "waiting", alive: players, roles: {}, nightActions: { mafia: '', doctor: '', detective: '' }, votes: {}, nightLog: '', winner: '', targetTime: 0, actedPlayers: [], mafiaChat: [], globalChat: [], defendingPlayer: '', nightCount: 1, wills: {}, recentlyDead: '', willNextPhase: '', willSkippers: [] });
   }
 
-  // دالة حفظ الوصية (أو التخطي)
   const saveWill = async (type = 'normal') => {
     const finalWill = type === 'skip' ? 'لا توجد وصية...' : (myWill.trim() || 'لا توجد وصية...');
     await updateDoc(doc(db, "rooms", roomDocId), {
@@ -155,7 +153,6 @@ function App() {
     setIsWillSaved(true);
   };
 
-  // دالة تخطي قراءة الوصية
   const skipWillReading = async () => {
     if (!willSkippers.includes(playerName)) {
       await updateDoc(doc(db, "rooms", roomDocId), {
@@ -165,7 +162,13 @@ function App() {
   };
 
   const triggerNight = async (docId, currentCount) => {
-    await updateDoc(doc(db, "rooms", docId), { phase: 'night', targetTime: Date.now() + 180000, actedPlayers: [], nightCount: currentCount + 1 });
+    await updateDoc(doc(db, "rooms", docId), { 
+      phase: 'night', 
+      targetTime: Date.now() + 180000, 
+      actedPlayers: [], 
+      nightCount: currentCount + 1,
+      nightActions: { mafia: '', doctor: '', detective: '' } 
+    });
   }
 
   const performNightResolution = async (docId, data) => {
@@ -237,33 +240,34 @@ function App() {
     return null;
   }
 
+  // === حل جذري لمشكلة اختفاء الاختيارات (Race Condition Fix) ===
   const submitNightAction = async () => {
     if (!selectedTarget) return alert("اختار هدفك!");
-    const docSnap = await getDocs(query(collection(db, "rooms"), where("roomCode", "==", roomId)));
-    let data; docSnap.forEach(d => data = d.data());
+    
     let field = '';
     if (myRole === 'مافيا') field = 'nightActions.mafia'; 
     if (myRole === 'طبيب') field = 'nightActions.doctor';
     if (myRole === 'محقق') {
       field = 'nightActions.detective';
       if (selectedTarget !== 'skip') {
-        setInvestigateResult(`${selectedTarget} هو: ${data.roles[selectedTarget] === 'مافيا' ? '🦹‍♂️ مافيا!' : '😇 ليس مافيا'}`);
+        setInvestigateResult(`${selectedTarget} هو: ${allRoles[selectedTarget] === 'مافيا' ? '🦹‍♂️ مافيا!' : '😇 ليس مافيا'}`);
       }
     }
-    const newActed = [...(data.actedPlayers || []), playerName];
-    const uniqueActed = [...new Set(newActed)]; 
-    await updateDoc(doc(db, "rooms", roomDocId), { [field]: selectedTarget, actedPlayers: uniqueActed });
-    const aliveSpecials = data.alive.filter(p => ['مافيا', 'طبيب', 'محقق'].includes(data.roles[p]));
-    if (uniqueActed.length >= aliveSpecials.length) performNightResolution(roomDocId, { ...data, nightActions: { ...data.nightActions, [field]: selectedTarget } });
+    
+    // إرسال البيانات مباشرة لقاعدة البيانات بدون قراءتها لتجنب تداخل الاختيارات
+    await updateDoc(doc(db, "rooms", roomDocId), { 
+      [field]: selectedTarget, 
+      actedPlayers: arrayUnion(playerName) 
+    });
   }
 
   const castVote = async (target) => {
-    const docSnap = await getDocs(query(collection(db, "rooms"), where("roomCode", "==", roomId)));
-    let data; docSnap.forEach(d => data = d.data());
-    const newVotes = { ...(data.votes || {}), [playerName]: target };
-    await updateDoc(doc(db, "rooms", roomDocId), { votes: newVotes });
-    if (Object.keys(newVotes).length >= data.alive.length && phase === 'voting') performVoteResolution(roomDocId, { ...data, votes: newVotes });
+    // حل مشكلة تداخل الأصوات لو صوتوا بنفس اللحظة
+    await updateDoc(doc(db, "rooms", roomDocId), { 
+      [`votes.${playerName}`]: target 
+    });
   }
+
   const withdrawVote = async () => { await updateDoc(doc(db, "rooms", roomDocId), { [`votes.${playerName}`]: deleteField() }); }
   
   const detectiveSacrifice = async () => {
@@ -282,7 +286,7 @@ function App() {
       globalChat: arrayUnion({ sender: 'النظام ⚖️', text: sysMsg }),
       recentlyDead: playerName,
       willNextPhase: data.phase, 
-      targetTime: Date.now() + 20000, // 20 ثانية لعرض وصية المحقق 
+      targetTime: Date.now() + 20000, 
       willSkippers: []
     });
   }
@@ -324,17 +328,28 @@ function App() {
     }
   }, [roomDocId, playerName]);
 
-  // === التخطي الذكي: ينهي الوقت فوراً إذا اكتمل العدد ===
+  // === التخطي الذكي الشامل: ينهي الوقت فوراً إذا اكتمل العدد (للأدوار، الوصية، والتصويت) ===
   useEffect(() => {
-    if (players.length > 0 && players[0] === playerName) { // المضيف فقط ينفذها حتى لا يصير تكرار
+    if (players.length > 0 && players[0] === playerName) { 
       if (phase === 'write_will' && Object.keys(wills).length === players.length) {
-        updateDoc(doc(db, "rooms", roomDocId), { targetTime: 1 }); // يصفر الوقت لتبدأ اللعبة
+        updateDoc(doc(db, "rooms", roomDocId), { targetTime: 1 }); 
       }
-      if (phase === 'show_will' && willSkippers.length === players.length) {
-        updateDoc(doc(db, "rooms", roomDocId), { targetTime: 1 }); // يصفر الوقت ليعبر الوصية
+      else if (phase === 'show_will' && willSkippers.length === players.length) {
+        updateDoc(doc(db, "rooms", roomDocId), { targetTime: 1 }); 
+      }
+      else if (phase === 'night') {
+        const aliveSpecials = alivePlayers.filter(p => ['مافيا', 'طبيب', 'محقق'].includes(allRoles[p]));
+        if (actedPlayers.length > 0 && actedPlayers.length >= aliveSpecials.length) {
+          updateDoc(doc(db, "rooms", roomDocId), { targetTime: 1 });
+        }
+      }
+      else if (phase === 'voting') {
+        if (Object.keys(votes).length >= alivePlayers.length) {
+          updateDoc(doc(db, "rooms", roomDocId), { targetTime: 1 });
+        }
       }
     }
-  }, [wills, willSkippers, phase, players, playerName, roomDocId]);
+  }, [wills, willSkippers, actedPlayers, votes, phase, players, playerName, roomDocId, alivePlayers, allRoles]);
 
   useEffect(() => {
     let interval;
@@ -344,6 +359,7 @@ function App() {
         if (left <= 0) {
           setTimeLeft(0); clearInterval(interval);
           if (players[0] === playerName) {
+            // سحب أحدث بيانات من القاعدة قبل إصدار أي قرار لضمان الدقة 100%
             const docSnap = await getDocs(query(collection(db, "rooms"), where("roomCode", "==", roomId)));
             let data; docSnap.forEach(d => data = d.data());
             
@@ -357,7 +373,6 @@ function App() {
               else if (phase === 'night') performNightResolution(roomDocId, data);
               else if (phase === 'day_result') {
                 if (data.recentlyDead) {
-                  // 20 ثانية لعرض الوصية مع تصفير قائمة التخطي
                   await updateDoc(doc(db, "rooms", roomDocId), { phase: 'show_will', willNextPhase: 'voting', targetTime: Date.now() + 20000, willSkippers: [] });
                 } else {
                   triggerVoting(roomDocId);
@@ -394,7 +409,7 @@ function App() {
   return (
     <div className="game-container">
       
-      {/* === نافذة عرض الوصية مع زر التخطي الجماعي === */}
+      {/* نافذة عرض الوصية مع زر التخطي الجماعي */}
       {phase === 'show_will' && inRoom && (
         <div className="will-overlay">
           <div className="will-paper">
@@ -451,7 +466,7 @@ function App() {
             </div>
           )}
 
-          {/* === شاشة كتابة الوصية (مع زر التخطي) === */}
+          {/* شاشة كتابة الوصية */}
           {phase === 'write_will' && (
             <div style={{ padding: '20px', backgroundColor: '#0f172a', borderRadius: '15px', border: '2px solid #f59e0b', textAlign: 'center' }}>
               <h2 style={{ color: '#f59e0b', fontSize: '28px' }}>📜 اكتب وصيتك!</h2>
