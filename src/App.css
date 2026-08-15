@@ -126,3 +126,58 @@ p { color: #94a3b8; font-size: 16px; }
   margin-bottom: 15px;
   filter: drop-shadow(0px 0px 10px rgba(255,255,255,0.2));
 }
+/* =============================== */
+/* تحسينات شاشة الموبايل والأزرار  */
+/* =============================== */
+* {
+  box-sizing: border-box;
+}
+
+.game-container {
+  width: 100%;
+  max-width: 600px;
+  margin: 0 auto;
+  padding: 15px;
+  overflow-x: hidden;
+}
+
+.btn {
+  width: 100%;
+  padding: 14px;
+  font-size: 16px;
+  margin-bottom: 10px;
+  border-radius: 8px;
+  font-weight: bold;
+}
+
+.target-select {
+  width: 100%;
+  padding: 12px;
+  border-radius: 8px;
+  margin-bottom: 15px;
+  font-size: 16px;
+  background-color: #1e293b;
+  color: white;
+  border: 1px solid #475569;
+}
+
+.vote-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 15px;
+  gap: 10px;
+  flex-wrap: wrap; /* لمنع تداخل النصوص بالشاشات الصغيرة */
+}
+
+.vote-item .vote-btn {
+  width: auto;
+  min-width: 90px;
+  margin: 0;
+  padding: 10px;
+  flex-shrink: 0;
+}
+
+/* ألوان الأدوار الجديدة */
+.role-شرطي { background: #2563eb; color: white; border: 2px solid #60a5fa; }
+.role-محقق { background: #8b5cf6; color: white; border: 2px solid #a78bfa; } /* المحقق صار بنفسجي لتمييزه */
