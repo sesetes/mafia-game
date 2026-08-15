@@ -542,6 +542,7 @@ function App() {
     return null;
   }
 
+  // === تصغير الزوم لـ 202% بدل 215% للحفاظ على الأطراف والكتابة ===
   const getCardImageUrl = (role) => {
     if (role === 'طبيب') return "url('/doctor-card.png')";
     if (role === 'مواطن') return "url('/citizen-card.png')";
@@ -570,11 +571,10 @@ function App() {
         </div>
       )}
 
-      {/* الإطار القوطي الحديدي يغلف اللعبة بالكامل */}
       <div className="gothic-frame">
         
         {inRoom && (
-          <button className="btn-leave-corner" onClick={leaveRoom}>خروج من الغرفة 🚪</button>
+          <button className="btn-leave-corner" onClick={leaveRoom}>خروج 🚪</button>
         )}
 
         {!inRoom ? (
@@ -644,12 +644,14 @@ function App() {
                 
                 <div className={`card-3d-container ${showAdvice ? 'show-shadow' : ''}`}>
                   <div className={`card-3d ${showAdvice ? 'flipped' : ''}`}>
+                    
+                    {/* التعديل هنا: تصغير الزوم لـ 202% بدل 215% للحفاظ على الأطراف */}
                     <div className="card-face card-front" style={{
-                      backgroundImage: crowBgUrl, backgroundSize: '215% 102%', backgroundPosition: '0% 50%', 
+                      backgroundImage: crowBgUrl, backgroundSize: '202% 100%', backgroundPosition: 'left center', 
                       borderRadius: '15px', overflow: 'hidden', border: 'none', boxShadow: '0 0 15px rgba(0,0,0,0.8)'
                     }}></div>
                     <div className={`card-face card-back`} style={{ 
-                      backgroundImage: currentCardUrl, backgroundSize: '215% 102%', backgroundPosition: '100% 50%',
+                      backgroundImage: currentCardUrl, backgroundSize: '202% 100%', backgroundPosition: 'right center',
                       borderRadius: '15px', overflow: 'hidden', borderColor: 'transparent',
                       boxShadow: myRole === 'مافيا' ? '0 0 35px rgba(239, 68, 68, 0.8)' : myRole === 'طبيب' ? '0 0 35px rgba(16, 185, 129, 0.8)' : myRole === 'مواطن' ? '0 0 35px rgba(253, 230, 138, 0.8)' : myRole === 'محقق' ? '0 0 35px rgba(139, 92, 246, 0.8)' : myRole === 'شرطي' ? '0 0 35px rgba(37, 99, 235, 0.8)' : '0 0 30px rgba(245, 158, 11, 0.6)'
                     }}></div>
