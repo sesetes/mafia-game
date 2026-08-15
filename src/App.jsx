@@ -200,28 +200,24 @@ function App() {
 
   const pickRandom = (arr) => arr[Math.floor(Math.random() * arr.length)];
 
-  // === شروط الفوز الجديدة الخاصة بالمافيا ===
   const checkWin = (currentAlive, roles, initialCount) => {
     const mafias = currentAlive.filter(p => roles[p] === 'مافيا');
-    const citizens = currentAlive.filter(p => roles[p] !== 'مافيا'); // الأبرياء كلهم
+    const citizens = currentAlive.filter(p => roles[p] !== 'مافيا');
     
     if (mafias.length === 0) return 'المواطنين 😇';
     
     if (initialCount >= 7) {
-      // إذا 7 وفوق: تنتهي إذا بقى المافيا و 2 أشخاص فقط (أو أقل)
       if (citizens.length <= 2 && mafias.length > 0) {
         const mafiaNames = Object.keys(roles).filter(p => roles[p] === 'مافيا').join(' ، ');
         return `المافيا 🦹‍♂️ (${mafiaNames})`;
       }
     } else {
-      // إذا 6 وجوه: تنتهي إذا بقى المافيا وشخص واحد فقط
       if (citizens.length <= 1 && mafias.length > 0) {
         const mafiaNames = Object.keys(roles).filter(p => roles[p] === 'مافيا').join(' ، ');
         return `المافيا 🦹‍♂️ (${mafiaNames})`;
       }
     }
 
-    // القاعدة الأساسية الاحتياطية للمافيا
     if (mafias.length >= citizens.length) {
       const mafiaNames = Object.keys(roles).filter(p => roles[p] === 'مافيا').join(' ، ');
       return `المافيا 🦹‍♂️ (${mafiaNames})`;
@@ -246,7 +242,6 @@ function App() {
     const isDoctorBlocked = isDoctorAlive && data.alive.filter(p => data.roles[p] === 'طبيب').includes(handcuffedPlayer);
     const isDetectiveBlocked = isDetectiveAlive && data.alive.filter(p => data.roles[p] === 'محقق').includes(handcuffedPlayer);
 
-    // 1. أخبار الشرطة (تذكر اسم المقيد بوضوح)
     if (isPoliceAlive) {
       if (handcuffedPlayer) {
         news.push(`${counter++}. 🚨 الشرطة داهمت مقر (${handcuffedPlayer}) وقامت بتقييد حركته تماماً الليلة.`);
@@ -255,7 +250,6 @@ function App() {
       }
     }
 
-    // 2. أخبار المافيا
     let someoneDied = false;
     if (isMafiaAlive) {
       if (isMafiaBlocked || !mafia || mafia === 'skip') {
@@ -283,7 +277,6 @@ function App() {
       }
     }
 
-    // 3. أخبار الطبيب
     if (isDoctorAlive) {
       if (isDoctorBlocked) {
         news.push(`${counter++}. 👨‍⚕️ ${pickRandom([
@@ -311,7 +304,6 @@ function App() {
       }
     }
 
-    // 4. أخبار المحقق
     if (isDetectiveAlive) {
       if (isDetectiveBlocked || !detective || detective === 'skip') {
         news.push(`${counter++}. 🕵️ ${pickRandom([
@@ -540,15 +532,12 @@ function App() {
 
   const myMafiaMates = Object.keys(allRoles).filter(p => allRoles[p] === 'مافيا' && p !== playerName);
 
-  // === تعارف المواطنين التراكمي المترابط ===
   const getCitizenDiscovery = () => {
     if (myRole !== 'مواطن' || !isAlive || nightCount < 3 || !citizenOrder || citizenOrder.length < 2) return null;
     
-    // عدد المواطنين اللي ينكشفون يكبر كل ليلة
     const groupSize = Math.min(nightCount - 1, citizenOrder.length);
     const revealedGroup = citizenOrder.slice(0, groupSize);
     
-    // أي شخص داخل المجموعة، يقدر يشوف بقية أفرادها
     if (revealedGroup.includes(playerName)) {
       let msgs = [];
       revealedGroup.forEach(ally => {
@@ -562,6 +551,20 @@ function App() {
     }
     return null;
   }
+
+  // === التحديث الأخير: تحديد صورة كل بطاقة ===
+  const getCardImageUrl = (role) => {
+    if (role === 'طبيب') return "url('/doctor-card.png')";
+    if (role === 'مواطن') return "url('/citizen-card.png')";
+    if (role === 'محقق') return "url('/detective-card.png')";
+    if (role === 'شرطي') return "url('/police-card.png')";
+    if (role === 'مافيا') return "url('/mafia-card.png')";
+    return 'none';
+  };
+
+  const currentCardUrl = getCardImageUrl(myRole);
+  // سحب ظهر الغراب الخاص بالبطاقة، حتى كل بطاقة يطلع الغراب اللي مصمم إلها!
+  const crowBgUrl = currentCardUrl !== 'none' ? currentCardUrl : "url('/doctor-card.png')";
 
   return (
     <div className="game-container">
@@ -637,20 +640,25 @@ function App() {
 
               <div className="card-3d-container">
                 <div className="card-3d">
-                  <div className="card-face card-front">
-                    <div className="role-icon">❓</div>
-                    <div style={{fontSize: '20px'}}>بطاقتك</div>
-                  </div>
-                  <div className={`card-face card-back`} style={{ 
-                    borderColor: myRole === 'مافيا' ? '#ef4444' : myRole === 'طبيب' ? '#10b981' : myRole === 'محقق' ? '#8b5cf6' : myRole === 'شرطي' ? '#2563eb' : '#f59e0b',
-                    boxShadow: myRole === 'مافيا' ? '0 0 30px rgba(239, 68, 68, 0.6)' : myRole === 'طبيب' ? '0 0 30px rgba(16, 185, 129, 0.6)' : myRole === 'محقق' ? '0 0 30px rgba(139, 92, 246, 0.6)' : myRole === 'شرطي' ? '0 0 30px rgba(37, 99, 235, 0.6)' : '0 0 30px rgba(245, 158, 11, 0.6)'
+                  
+                  {/* وجه الغراب (الظهر) */}
+                  <div className="card-face card-front" style={{
+                    backgroundImage: crowBgUrl,
+                    backgroundSize: '200% 100%',
+                    backgroundPosition: 'left center', 
+                    borderRadius: '15px', overflow: 'hidden', border: 'none'
                   }}>
-                    <div className="role-icon">
-                      {myRole === 'مافيا' ? '🦹‍♂️' : myRole === 'طبيب' ? '👨‍⚕️' : myRole === 'محقق' ? '🕵️‍♂️' : myRole === 'شرطي' ? '👮‍♂️' : '😇'}
-                    </div>
-                    <div style={{ fontSize: '24px', fontWeight: 'bold', color: myRole === 'مواطن' ? '#fde68a' : 'inherit' }}>
-                      أنت: {myRole}
-                    </div>
+                  </div>
+
+                  {/* واجهة البطاقة الحقيقية */}
+                  <div className={`card-face card-back`} style={{ 
+                    backgroundImage: currentCardUrl,
+                    backgroundSize: '200% 100%',
+                    backgroundPosition: 'right center',
+                    borderRadius: '15px', overflow: 'hidden',
+                    borderColor: currentCardUrl !== 'none' ? 'transparent' : (myRole === 'مافيا' ? '#ef4444' : myRole === 'محقق' ? '#8b5cf6' : myRole === 'شرطي' ? '#2563eb' : '#f59e0b'),
+                    boxShadow: myRole === 'مافيا' ? '0 0 30px rgba(239, 68, 68, 0.6)' : myRole === 'طبيب' ? '0 0 30px rgba(16, 185, 129, 0.6)' : myRole === 'مواطن' ? '0 0 30px rgba(253, 230, 138, 0.6)' : myRole === 'محقق' ? '0 0 30px rgba(139, 92, 246, 0.6)' : myRole === 'شرطي' ? '0 0 30px rgba(37, 99, 235, 0.6)' : '0 0 30px rgba(245, 158, 11, 0.6)'
+                  }}>
                   </div>
                 </div>
               </div>
