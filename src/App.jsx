@@ -256,13 +256,11 @@ function App() {
         news.push(`${counter++}. 🦹‍♂️ ${pickRandom([
           "المافيا تتريث ولا تتحرك في ظلام الليلة.",
           "خيم الهدوء المريب على المدينة، ولم تنفذ المافيا أي عملية اغتيال الليلة.",
-          "يبدو أن المافيا واجهت عقبة منعتها من إراقة الدماء، أو ربما هو هدوء ما قبل العاصفة.",
           "نجت المدينة من شر المافيا هذه الليلة، لسبب يجهله الجميع."
         ])}`);
       } else if (mafia === doctor && !isDoctorBlocked) {
         news.push(`${counter++}. 🦹‍♂️ ${pickRandom([
           "المافيا شنت هجوماً عنيفاً، ولكن حدث ما لم يكن بالحسبان ونجت الضحية!",
-          "رصاصات المافيا أخطأت هدفها القاتل الليلة.",
           "محاولة اغتيال فاشلة من المافيا تركت الضحية على قيد الحياة."
         ])}`);
       } else {
@@ -271,7 +269,6 @@ function App() {
         someoneDied = true;
         news.push(`${counter++}. 🦹‍♂️ ${pickRandom([
           `المافيا تجرم وتستبيح دماء الأبرياء، لتستيقظ المدينة على جثة (${mafia}).`,
-          `لم ترحم المافيا صرخات (${mafia})، وتركته ضحية لغدرها الليلة.`,
           `رصاصة غادرة في جنح الظلام أنهت حياة (${mafia}) بلا رحمة.`
         ])}`);
       }
@@ -281,20 +278,17 @@ function App() {
       if (isDoctorBlocked) {
         news.push(`${counter++}. 👨‍⚕️ ${pickRandom([
           "الطبيب أخفق في معالجة الضحية وواجه ظروفاً غامضة منعته من أداء عمله.",
-          "عجز الطبيب عن الخروج الليلة، لتبقى أرواح الأبرياء بلا حماية.",
-          "طبيب المدينة لم يتمكن من الوصول للمستشفى الليلة."
+          "عجز الطبيب عن الخروج الليلة، لتبقى أرواح الأبرياء بلا حماية."
         ])}`);
       } else if (someoneDied) {
         news.push(`${counter++}. 👨‍⚕️ ${pickRandom([
           "الطبيب أخفق في الوصول للضحية في الوقت المناسب.",
-          "جهود الطبيب ذهبت سدى، وانهار أمام بشاعة الجريمة.",
-          "بحث الطبيب في المكان الخطأ، ليدفع بريء حياته ثمناً لذلك."
+          "جهود الطبيب ذهبت سدى، وانهار أمام بشاعة الجريمة."
         ])}`);
       } else if (isMafiaAlive && mafia && mafia !== 'skip' && !isMafiaBlocked && mafia === doctor) {
         news.push(`${counter++}. 👨‍⚕️ ${pickRandom([
           "الطبيب أتم عمله بصورة جميلة وأنقذ روحاً كانت على حافة الموت.",
-          "تدخل طبي مذهل في اللحظة الأخيرة أحبط مخطط المافيا الدموي.",
-          "عناية إلهية وبراعة طبيب المدينة أنقذت الضحية من موت محقق."
+          "تدخل طبي مذهل في اللحظة الأخيرة أحبط مخطط المافيا الدموي."
         ])}`);
       } else {
         news.push(`${counter++}. 👨‍⚕️ ${pickRandom([
@@ -308,21 +302,18 @@ function App() {
       if (isDetectiveBlocked || !detective || detective === 'skip') {
         news.push(`${counter++}. 🕵️ ${pickRandom([
           "المحقق ما زال يسعى لكشف المتورطين وسط هذا الغموض.",
-          "تحقيقات الليلة تعرقلت، والمحقق يواصل عمله بصمت.",
-          "ضبابية الأحداث جعلت مهمة المحقق صعبة، لكنه لم يفقد الأمل."
+          "تحقيقات الليلة تعرقلت، والمحقق يواصل عمله بصمت."
         ])}`);
       } else {
         const targetRole = data.roles[detective];
         if (targetRole === 'مافيا') {
            news.push(`${counter++}. 🕵️ ${pickRandom([
             "توجد لدى المحقق أخبار سارة للمواطنين ستغير مجرى الأحداث!",
-            "المحقق وجد الخيط المفقود، وهناك أسرار خطيرة على وشك أن تُكشف.",
             "عدسة المحقق التقطت تحركات مشبوهة تؤكد هوية أحد أفراد المافيا."
           ])}`);
         } else {
            news.push(`${counter++}. 🕵️ ${pickRandom([
             "المحقق ما زال يسعى لكشف المتورطين، وقد استبعد أحد المشتبه بهم.",
-            "تحقيقات الليلة لم تثمر عن دليل إدانة قاطع ضد الهدف.",
             "المحقق يواصل تضييق دائرة المشتبه بهم شيئاً فشيئاً."
           ])}`);
         }
@@ -534,7 +525,6 @@ function App() {
 
   const getCitizenDiscovery = () => {
     if (myRole !== 'مواطن' || !isAlive || nightCount < 3 || !citizenOrder || citizenOrder.length < 2) return null;
-    
     const groupSize = Math.min(nightCount - 1, citizenOrder.length);
     const revealedGroup = citizenOrder.slice(0, groupSize);
     
@@ -552,7 +542,6 @@ function App() {
     return null;
   }
 
-  // === التحديث الأخير: تحديد صورة كل بطاقة ===
   const getCardImageUrl = (role) => {
     if (role === 'طبيب') return "url('/doctor-card.png')";
     if (role === 'مواطن') return "url('/citizen-card.png')";
@@ -563,11 +552,10 @@ function App() {
   };
 
   const currentCardUrl = getCardImageUrl(myRole);
-  // سحب ظهر الغراب الخاص بالبطاقة، حتى كل بطاقة يطلع الغراب اللي مصمم إلها!
   const crowBgUrl = currentCardUrl !== 'none' ? currentCardUrl : "url('/doctor-card.png')";
 
   return (
-    <div className="game-container">
+    <div className="gothic-wrapper">
       
       {phase === 'show_will' && inRoom && (
         <div className="will-overlay">
@@ -582,294 +570,300 @@ function App() {
         </div>
       )}
 
-      {!inRoom ? (
-        <div>
-          <h1>🕵️‍♂️ لعبة المافيا</h1>
-          <p>أدخل اسمك وكود الغرفة للعب</p>
-          <input type="text" placeholder="اسمك..." value={playerName} onChange={e=>setPlayerName(e.target.value)} className="input-field"/>
-          <button onClick={createRoom} className="btn btn-create">إنشاء غرفة جديد</button>
-          <div style={{ marginTop: '15px' }}>
-            <input type="text" placeholder="كود الغرفة" value={joinCode} onChange={e=>setJoinCode(e.target.value)} className="input-field"/>
-            <button onClick={joinRoom} className="btn btn-join">انضمام لغرفة</button>
+      {/* الإطار القوطي الحديدي يغلف اللعبة بالكامل */}
+      <div className="gothic-frame">
+        
+        {inRoom && (
+          <button className="btn-leave-corner" onClick={leaveRoom}>خروج من الغرفة 🚪</button>
+        )}
+
+        {!inRoom ? (
+          <div>
+            <div className="logo-container">
+              <div className="logo-icon">🕵️‍♂️</div>
+              <h1 className="gothic-title">لعبة المافيا</h1>
+            </div>
+            <p className="gothic-subtitle">أدخل اسمك وكود الغرفة للعب</p>
+            
+            <div className="input-group">
+              <input type="text" placeholder="[اسمك...] 🪶" value={playerName} onChange={e=>setPlayerName(e.target.value)} className="gothic-input"/>
+              <input type="text" placeholder="كود الغرفة 🗝️" value={joinCode} onChange={e=>setJoinCode(e.target.value)} className="gothic-input"/>
+            </div>
+            
+            <button onClick={createRoom} className="gothic-btn btn-red">إنشاء غرفة جديدة 🌹</button>
+            <button onClick={joinRoom} className="gothic-btn btn-teal">الانضمام لغرفة 🕳️</button>
           </div>
-        </div>
-      ) : (
-        <div>
-          <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: '10px' }}>
-            <button onClick={leaveRoom} style={{ backgroundColor: 'transparent', border: '1px solid #ef4444', padding: '5px 15px', borderRadius: '8px', color: '#ef4444', cursor: 'pointer', transition: 'all 0.3s' }}>
-              خروج من الغرفة 🚪
-            </button>
-          </div>
-
-          {phase === 'waiting' && <h2>⏳ كود الغرفة: <span style={{ color: '#f43f5e' }}>{roomId}</span></h2>}
-          {phase !== 'waiting' && phase !== 'game_over' && phase !== 'role_reveal' && phase !== 'write_will' && (
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '15px' }}>
-              <div className={`role-badge role-${myRole}`}>دورك: {myRole}</div>
-              {!isAlive && <div style={{ color: '#ef4444', fontWeight: 'bold' }}>💀 تم إقصاؤك</div>}
-            </div>
-          )}
-
-          {phase === 'write_will' && (
-            <div style={{ padding: '20px', backgroundColor: '#0f172a', borderRadius: '15px', border: '2px solid #f59e0b', textAlign: 'center' }}>
-              <h2 style={{ color: '#f59e0b', fontSize: '28px' }}>📜 اكتب وصيتك!</h2>
-              <p style={{ color: '#cbd5e1', fontSize: '15px', marginTop: '10px' }}>اكتب كلمتك الأخيرة. ستظهر للجميع إذا تم قتلك.</p>
-              <h1 style={{ color: timeLeft <= 10 ? '#ef4444' : 'white', margin: '15px 0' }}>⏳ {timeLeft} ثانية</h1>
-              
-              {!isWillSaved ? (
-                <>
-                  <textarea value={myWill} onChange={e => setMyWill(e.target.value.substring(0, 150))} placeholder="اكتب وصيتك هنا (الحد الأقصى 150 حرف)..." style={{ width: '100%', height: '100px', padding: '15px', borderRadius: '10px', backgroundColor: '#1e293b', color: 'white', border: '1px solid #475569', marginTop: '10px', resize: 'none', fontSize: '16px' }} />
-                  <p style={{ fontSize: '14px', color: myWill.length >= 150 ? '#ef4444' : '#94a3b8', textAlign: 'left', margin: '5px 0' }}>{myWill.length}/150</p>
-                  <div style={{ display: 'flex', gap: '10px', marginTop: '10px' }}>
-                    <button onClick={() => saveWill('normal')} className="btn" style={{ backgroundColor: '#10b981', flex: 1, fontSize: '18px' }}>حفظ</button>
-                    <button onClick={() => saveWill('skip')} className="btn" style={{ backgroundColor: '#64748b', flex: 1, fontSize: '18px' }}>تخطي ⏭️</button>
-                  </div>
-                </>
-              ) : (
-                <div style={{ backgroundColor: '#064e3b', padding: '20px', borderRadius: '10px', marginTop: '20px' }}>
-                  <h3 style={{ color: '#34d399', margin: 0 }}>✅ تم تأكيد وصيتك!</h3>
-                  <p style={{ color: '#a7f3d0', fontSize: '14px', marginTop: '10px' }}>بانتظار باقي اللاعبين لتوزيع الأدوار...</p>
-                </div>
-              )}
-            </div>
-          )}
-
-          {phase === 'role_reveal' && (
-            <div style={{ padding: '20px', backgroundColor: '#0f172a', borderRadius: '15px', border: '2px dashed #475569', textAlign: 'center' }}>
-              <h1>🎭 أهلاً بك في مدينة المافيا!</h1>
-              <p>تم توزيع الأدوار، جاري كشف هويتك...</p>
-
-              <div className="card-3d-container">
-                <div className="card-3d">
-                  
-                  {/* وجه الغراب (الظهر) */}
-                  <div className="card-face card-front" style={{
-                    backgroundImage: crowBgUrl,
-                    backgroundSize: '200% 100%',
-                    backgroundPosition: 'left center', 
-                    borderRadius: '15px', overflow: 'hidden', border: 'none'
-                  }}>
-                  </div>
-
-                  {/* واجهة البطاقة الحقيقية */}
-                  <div className={`card-face card-back`} style={{ 
-                    backgroundImage: currentCardUrl,
-                    backgroundSize: '200% 100%',
-                    backgroundPosition: 'right center',
-                    borderRadius: '15px', overflow: 'hidden',
-                    borderColor: currentCardUrl !== 'none' ? 'transparent' : (myRole === 'مافيا' ? '#ef4444' : myRole === 'محقق' ? '#8b5cf6' : myRole === 'شرطي' ? '#2563eb' : '#f59e0b'),
-                    boxShadow: myRole === 'مافيا' ? '0 0 30px rgba(239, 68, 68, 0.6)' : myRole === 'طبيب' ? '0 0 30px rgba(16, 185, 129, 0.6)' : myRole === 'مواطن' ? '0 0 30px rgba(253, 230, 138, 0.6)' : myRole === 'محقق' ? '0 0 30px rgba(139, 92, 246, 0.6)' : myRole === 'شرطي' ? '0 0 30px rgba(37, 99, 235, 0.6)' : '0 0 30px rgba(245, 158, 11, 0.6)'
-                  }}>
-                  </div>
-                </div>
-              </div>
-
-              {myRole === 'مافيا' && myMafiaMates.length > 0 && <h3 style={{ color: '#fca5a5', marginTop: '15px' }}>🤝 زميلك في المافيا هو: {myMafiaMates.join(' و ')}</h3>}
-              
-              {showAdvice && (
-                <div style={{ marginTop: '15px', padding: '15px', backgroundColor: 'rgba(0,0,0,0.3)', borderRadius: '10px', animation: 'fadeIn 0.5s ease-in' }}>
-                    {myRole === 'مواطن' && <h3 style={{color: '#fde68a', margin: 0}}>🎯 هدفك: حاول أن تبقى حياً إلى الليلة الثالثة!</h3>}
-                    {myRole === 'محقق' && <h3 style={{color: '#c4b5fd', margin: 0}}>🎯 هدفك: كثف جهودك، الأبرياء ينتظرون منك الخلاص!</h3>}
-                    {myRole === 'طبيب' && <h3 style={{color: '#a7f3d0', margin: 0}}>🎯 هدفك: أرواح المواطنين مسؤوليتك!</h3>}
-                    {myRole === 'شرطي' && <h3 style={{color: '#93c5fd', margin: 0}}>🎯 هدفك: حاول أن تكون دقيقاً في واجبك!</h3>}
-                    {myRole === 'مافيا' && <h3 style={{color: '#fca5a5', margin: 0}}>🎯 مهمتك: دعنا نحرق هذا العالم 😈</h3>}
-                </div>
-              )}
-
-              <h2 style={{ color: '#10b981', marginTop: '20px' }}>⏳ ستبدأ الليلة الأولى بعد {timeLeft} ثانية...</h2>
-            </div>
-          )}
-
-          {myRole === 'مافيا' && phase !== 'waiting' && phase !== 'game_over' && phase !== 'role_reveal' && phase !== 'write_will' && myMafiaMates.length > 0 && (
-            <div className="chat-container" style={{ borderColor: '#7f1d1d' }}>
-              <div className="chat-title" style={{ color: '#fca5a5' }}>🤝 شات المافيا السري</div>
-              <div className="chat-box" ref={mafiaChatRef}>
-                {mafiaChat.map((msg, i) => (
-                  <div key={i} className={`chat-msg ${msg.sender === playerName ? 'msg-mine' : 'msg-mafia'}`}>
-                    <strong>{msg.sender}:</strong> {msg.text}
-                  </div>
-                ))}
-              </div>
-              {isAlive ? (
-                <div className="chat-input-area">
-                  <input type="text" value={mafiaMsg} onChange={e=>setMafiaMsg(e.target.value)} onKeyPress={e => e.key === 'Enter' && sendMafia()} placeholder="اكتب لزميلك..." className="chat-input" />
-                  <button onClick={()=>sendMafia()} className="chat-send-btn mafia-btn">إرسال</button>
-                </div>
-              ) : (
-                <p style={{ color: '#ef4444', fontSize: '14px' }}>🚫 لا يمكنك الكتابة لأنك مقصى.</p>
-              )}
-            </div>
-          )}
-
-          {myRole === 'محقق' && isAlive && (phase === 'voting' || phase === 'day_result') && (
-            <div style={{ backgroundColor: '#450a0a', padding: '15px', borderRadius: '10px', marginTop: '10px', border: '1px solid #ef4444' }}>
-              <h4 style={{ color: '#fca5a5', margin: '0 0 10px 0' }}>🚨 تضحية المحقق</h4>
-              <p style={{ fontSize: '13px', margin: '0 0 10px 0' }}>اكشف هويتك وافضح متهم كدام الكل!</p>
-              <select onChange={e=>setSacrificeTarget(e.target.value)} value={sacrificeTarget} className="target-select" style={{ borderColor: '#ef4444', padding: '8px' }}>
-                <option value="">-- اختار المتهم لفضحه --</option>
-                {alivePlayers.filter(p=>p!==playerName).map((p,i)=><option key={i} value={p}>{p}</option>)}
-              </select>
-              <button onClick={detectiveSacrifice} className="btn" style={{ backgroundColor: '#ef4444', margin: '10px 0 0 0' }}>فضح المتهم والخروج</button>
-            </div>
-          )}
-
-          <div style={{ marginTop: '20px' }}>
+        ) : (
+          <div>
             {phase === 'waiting' && (
-              <div>
-                <h3>اللاعبين ({players.length}):</h3>
-                <ul style={{ listStyle: 'none', padding: 0 }}>
-                  {players.map((p,i) => (
-                    <li key={i} style={{backgroundColor: '#334155', margin: '5px 0', padding: '10px', borderRadius: '8px', display: 'flex', justifyContent: 'space-between', alignItems: 'center'}}>
-                      <span>👤 {p} {p === players[0] && '👑 (المضيف)'}</span>
-                      {players[0] === playerName && p !== playerName && (
-                        <button onClick={() => kickPlayer(p)} style={{ backgroundColor: '#ef4444', color: 'white', border: 'none', padding: '5px 10px', borderRadius: '5px', cursor: 'pointer', fontWeight: 'bold' }}>طرد ❌</button>
-                      )}
-                    </li>
+              <div className="logo-container">
+                <div className="logo-icon">🕵️‍♂️</div>
+                <h1 className="gothic-title">لعبة المافيا</h1>
+                <div className="room-code-box" style={{marginTop: '20px'}}>
+                  <span>⏳</span>
+                  <span>كود الغرفة</span>
+                  <span className="code-highlight">{roomId}</span>
+                </div>
+              </div>
+            )}
+            
+            {phase !== 'waiting' && phase !== 'game_over' && phase !== 'role_reveal' && phase !== 'write_will' && (
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '15px', marginTop: '20px' }}>
+                <div className={`role-badge role-${myRole}`}>دورك: {myRole}</div>
+                {!isAlive && <div style={{ color: '#ef4444', fontWeight: 'bold' }}>💀 تم إقصاؤك</div>}
+              </div>
+            )}
+
+            {phase === 'write_will' && (
+              <div style={{ padding: '20px', backgroundColor: '#0f172a', borderRadius: '15px', border: '2px solid #f59e0b', textAlign: 'center', marginTop: '20px' }}>
+                <h2 style={{ color: '#f59e0b', fontSize: '28px' }}>📜 اكتب وصيتك!</h2>
+                <p style={{ color: '#cbd5e1', fontSize: '15px', marginTop: '10px' }}>اكتب كلمتك الأخيرة. ستظهر للجميع إذا تم قتلك.</p>
+                <h1 style={{ color: timeLeft <= 10 ? '#ef4444' : 'white', margin: '15px 0' }}>⏳ {timeLeft} ثانية</h1>
+                
+                {!isWillSaved ? (
+                  <>
+                    <textarea value={myWill} onChange={e => setMyWill(e.target.value.substring(0, 150))} placeholder="اكتب وصيتك هنا (الحد الأقصى 150 حرف)..." style={{ width: '100%', height: '100px', padding: '15px', borderRadius: '10px', backgroundColor: '#1e293b', color: 'white', border: '1px solid #475569', marginTop: '10px', resize: 'none', fontSize: '16px' }} />
+                    <p style={{ fontSize: '14px', color: myWill.length >= 150 ? '#ef4444' : '#94a3b8', textAlign: 'left', margin: '5px 0' }}>{myWill.length}/150</p>
+                    <div style={{ display: 'flex', gap: '10px', marginTop: '10px' }}>
+                      <button onClick={() => saveWill('normal')} className="gothic-btn btn-teal" style={{ flex: 1, fontSize: '18px', marginBottom: 0 }}>حفظ</button>
+                      <button onClick={() => saveWill('skip')} className="gothic-btn" style={{ backgroundColor: '#64748b', color: 'white', flex: 1, fontSize: '18px', marginBottom: 0, border: '2px solid #475569' }}>تخطي ⏭️</button>
+                    </div>
+                  </>
+                ) : (
+                  <div style={{ backgroundColor: '#064e3b', padding: '20px', borderRadius: '10px', marginTop: '20px' }}>
+                    <h3 style={{ color: '#34d399', margin: 0 }}>✅ تم تأكيد وصيتك!</h3>
+                    <p style={{ color: '#a7f3d0', fontSize: '14px', marginTop: '10px' }}>بانتظار باقي اللاعبين لتوزيع الأدوار...</p>
+                  </div>
+                )}
+              </div>
+            )}
+
+            {phase === 'role_reveal' && (
+              <div style={{ padding: '20px', textAlign: 'center', marginTop: '20px' }}>
+                <h1 style={{color: '#d6d3d1'}}>🎭 توزيع الأدوار</h1>
+                
+                <div className={`card-3d-container ${showAdvice ? 'show-shadow' : ''}`}>
+                  <div className={`card-3d ${showAdvice ? 'flipped' : ''}`}>
+                    <div className="card-face card-front" style={{
+                      backgroundImage: crowBgUrl, backgroundSize: '215% 102%', backgroundPosition: '0% 50%', 
+                      borderRadius: '15px', overflow: 'hidden', border: 'none', boxShadow: '0 0 15px rgba(0,0,0,0.8)'
+                    }}></div>
+                    <div className={`card-face card-back`} style={{ 
+                      backgroundImage: currentCardUrl, backgroundSize: '215% 102%', backgroundPosition: '100% 50%',
+                      borderRadius: '15px', overflow: 'hidden', borderColor: 'transparent',
+                      boxShadow: myRole === 'مافيا' ? '0 0 35px rgba(239, 68, 68, 0.8)' : myRole === 'طبيب' ? '0 0 35px rgba(16, 185, 129, 0.8)' : myRole === 'مواطن' ? '0 0 35px rgba(253, 230, 138, 0.8)' : myRole === 'محقق' ? '0 0 35px rgba(139, 92, 246, 0.8)' : myRole === 'شرطي' ? '0 0 35px rgba(37, 99, 235, 0.8)' : '0 0 30px rgba(245, 158, 11, 0.6)'
+                    }}></div>
+                  </div>
+                </div>
+
+                {myRole === 'مافيا' && myMafiaMates.length > 0 && <h3 style={{ color: '#fca5a5', marginTop: '15px' }}>🤝 زميلك بالمافيا: {myMafiaMates.join(' و ')}</h3>}
+                
+                {showAdvice && (
+                  <div style={{ marginTop: '15px', padding: '15px', background: 'linear-gradient(to bottom, #1c1917, #0c0a09)', border: '1px solid #444', borderRadius: '10px', animation: 'fadeIn 0.5s ease-in' }}>
+                      {myRole === 'مواطن' && <h3 style={{color: '#fde68a', margin: 0}}>🎯 حاول أن تبقى حياً إلى الليلة الثالثة!</h3>}
+                      {myRole === 'محقق' && <h3 style={{color: '#c4b5fd', margin: 0}}>🎯 كثف جهودك، الأبرياء ينتظرون الخلاص!</h3>}
+                      {myRole === 'طبيب' && <h3 style={{color: '#a7f3d0', margin: 0}}>🎯 أرواح المواطنين مسؤوليتك!</h3>}
+                      {myRole === 'شرطي' && <h3 style={{color: '#93c5fd', margin: 0}}>🎯 كن دقيقاً في واجبك!</h3>}
+                      {myRole === 'مافيا' && <h3 style={{color: '#fca5a5', margin: 0}}>🎯 دعنا نحرق هذا العالم 😈</h3>}
+                  </div>
+                )}
+
+                <h2 style={{ color: '#10b981', marginTop: '20px' }}>⏳ ستبدأ الليلة بعد {timeLeft} ثانية...</h2>
+              </div>
+            )}
+
+            {myRole === 'مافيا' && phase !== 'waiting' && phase !== 'game_over' && phase !== 'role_reveal' && phase !== 'write_will' && myMafiaMates.length > 0 && (
+              <div className="chat-container" style={{ borderColor: '#7f1d1d' }}>
+                <div className="chat-title" style={{ background: 'linear-gradient(to right, #7f1d1d, #450a0a)' }}>🤝 شات المافيا السري</div>
+                <div className="chat-box" ref={mafiaChatRef}>
+                  {mafiaChat.map((msg, i) => (
+                    <div key={i} className={`chat-msg ${msg.sender === playerName ? 'msg-mine' : 'msg-mafia'}`}>
+                      <strong>{msg.sender}:</strong> {msg.text}
+                    </div>
                   ))}
-                </ul>
-                {players[0] === playerName && <button onClick={startGame} className="btn btn-start">🔥 بدء اللعبة (يحتاج 3+)</button>}
-              </div>
-            )}
-
-            {phase === 'night' && (
-              <div>
-                <h2>🌙 الليلة رقم {nightCount}</h2>
-                <h1 style={{ color: timeLeft <= 30 ? '#ef4444' : 'white' }}>⏳ {Math.floor(timeLeft / 60)}:{timeLeft % 60 < 10 ? '0' : ''}{timeLeft % 60}</h1>
-                
-                {getCitizenDiscovery() && (
-                  <div style={{ backgroundColor: '#0f172a', border: '1px solid #f59e0b', padding: '15px', borderRadius: '10px', marginBottom: '15px' }}>
-                    <h4 style={{ color: '#fde68a', margin: '0 0 10px 0' }}>👁️ معلومات سرية (خاصة بالمواطنين)</h4>
-                    {getCitizenDiscovery().map((msg, i) => <p key={i} style={{ color: '#10b981', margin: '5px 0', fontWeight: 'bold' }}>{msg}</p>)}
-                  </div>
-                )}
-
-                {isAlive && myRole !== 'مواطن' && !hasActed && (
-                  <div style={{ borderTop: '2px solid #334155', paddingTop: '15px', marginTop: '15px' }}>
-                    <p>اختار هدفك:</p>
-                    <select onChange={e=>setSelectedTarget(e.target.value)} value={selectedTarget} className="target-select">
-                      <option value="">-- اختار لاعب --</option>
-                      {(myRole === 'مافيا' || myRole === 'شرطي') && <option value="skip">⏭️ تخطي</option>}
-                      {alivePlayers.map((p, i) => {
-                        if (p === playerName && myRole !== 'طبيب') return null; 
-                        return <option key={i} value={p}>{p === playerName ? `${p} (أنا)` : p}</option>;
-                      })}
-                    </select>
-                    <button onClick={submitNightAction} className="btn btn-action">تأكيد الاختيار</button>
-                  </div>
-                )}
-                {hasActed && <p style={{ color: '#10b981', fontWeight: 'bold', fontSize:'20px', marginTop:'15px' }}>✅ تم تسجيل اختيارك!</p>}
-                
-                {investigateResult && (
-                  <div style={{ backgroundColor: '#2e1065', border: '1px solid #8b5cf6', padding: '15px', borderRadius: '10px', marginTop: '15px' }}>
-                    <p style={{ color: '#c4b5fd', fontWeight: 'bold', fontSize:'18px', margin: 0 }}>{investigateResult}</p>
-                  </div>
-                )}
-              </div>
-            )}
-
-            {(phase === 'day_result' || phase === 'defense_result') && (
-              <div>
-                <h2 style={{ lineHeight: '1.5', whiteSpace: 'pre-line', textAlign: 'right', backgroundColor: '#1e293b', padding: '15px', borderRadius: '10px', border: '1px solid #334155' }}>
-                  {nightLog}
-                </h2>
-                <h3 style={{ color: '#3b82f6', marginTop: '15px' }}>⏳ الانتقال للمرحلة القادمة بعد {timeLeft} ثانية...</h3>
-              </div>
-            )}
-
-            {phase === 'voting' && (
-              <div>
-                <h2>🗳️ التصويت الجماعي (علني)</h2>
-                <h3 style={{ color: timeLeft <= 60 ? '#ef4444' : '#10b981' }}>⏳ الوقت المتبقي: {Math.floor(timeLeft / 60)}:{timeLeft % 60 < 10 ? '0' : ''}{timeLeft % 60}</h3>
-                
-                {handcuffed === playerName ? (
-                  <div style={{ backgroundColor: '#7f1d1d', border: '2px dashed #ef4444', padding: '20px', borderRadius: '10px', textAlign: 'center', margin: '20px 0' }}>
-                    <h2 style={{ color: '#fca5a5' }}>🚨 أنت مقيد! 🚨</h2>
-                    <p style={{ color: 'white' }}>قامت الشرطة بتوقيفك. لا يمكنك التصويت اليوم!</p>
+                </div>
+                {isAlive ? (
+                  <div className="chat-input-area">
+                    <input type="text" value={mafiaMsg} onChange={e=>setMafiaMsg(e.target.value)} onKeyPress={e => e.key === 'Enter' && sendMafia()} placeholder="اكتب لزميلك..." className="chat-input" />
+                    <button onClick={()=>sendMafia()} className="chat-send-btn mafia-btn" style={{fontFamily: 'Amiri'}}>إرسال</button>
                   </div>
                 ) : (
-                  <>
-                    <div className={`vote-item ${hasVoted && myVoteTarget !== 'skip' ? 'dimmed' : ''} ${myVoteTarget === 'skip' ? 'selected' : ''}`} style={{ backgroundColor: '#475569' }}>
-                      <div style={{ textAlign: 'right' }}>
-                        <span>⏭️ تخطي (الأغلبية تلغي الإعدام)</span><br/>
-                        {Object.entries(votes).filter(([v, t]) => t === 'skip').map(([v]) => <span key={v} className="voter-tag">{v}</span>)}
-                      </div>
-                      {isAlive && (
-                        myVoteTarget === 'skip' ? (
-                          <button onClick={withdrawVote} className="vote-btn" style={{backgroundColor: '#64748b'}}>سحب</button>
-                        ) : (
-                          <button onClick={()=>castVote('skip')} className="vote-btn">تصويت</button>
-                        )
-                      )}
-                    </div>
+                  <p style={{ color: '#ef4444', fontSize: '14px', textAlign: 'center', padding: '5px' }}>🚫 لا يمكنك الكتابة لأنك مقصى.</p>
+                )}
+              </div>
+            )}
 
-                    {players.map((p, i) => (
-                      <div key={i} className={`vote-item ${hasVoted && myVoteTarget !== p ? 'dimmed' : ''} ${myVoteTarget === p ? 'selected' : ''}`}>
-                        <div style={{ textAlign: 'right' }}>
-                          <span>👤 {p} {!alivePlayers.includes(p) && <span style={{color:'#ef4444'}}>(إقصاء 💀)</span>}</span><br/>
-                          {Object.entries(votes).filter(([v, t]) => t === p).map(([v]) => <span key={v} className="voter-tag">{v}</span>)}
-                        </div>
-                        {isAlive && alivePlayers.includes(p) && (
-                          myVoteTarget === p ? (
-                            <button onClick={withdrawVote} className="vote-btn" style={{backgroundColor: '#64748b'}}>سحب</button>
-                          ) : (
-                            <button onClick={()=>castVote(p)} className="vote-btn">تصويت</button>
-                          )
+            {myRole === 'محقق' && isAlive && (phase === 'voting' || phase === 'day_result') && (
+              <div style={{ background: 'linear-gradient(to bottom, #450a0a, #280505)', padding: '15px', borderRadius: '10px', marginTop: '10px', border: '1px solid #7f1d1d' }}>
+                <h4 style={{ color: '#fca5a5', margin: '0 0 10px 0' }}>🚨 تضحية المحقق</h4>
+                <p style={{ fontSize: '13px', margin: '0 0 10px 0', color: '#d6d3d1' }}>اكشف هويتك وافضح متهم كدام الكل!</p>
+                <select onChange={e=>setSacrificeTarget(e.target.value)} value={sacrificeTarget} className="target-select" style={{ borderColor: '#ef4444' }}>
+                  <option value="">-- اختار المتهم لفضحه --</option>
+                  {alivePlayers.filter(p=>p!==playerName).map((p,i)=><option key={i} value={p}>{p}</option>)}
+                </select>
+                <button onClick={detectiveSacrifice} className="gothic-btn btn-red" style={{ marginBottom: 0, padding: '10px' }}>فضح المتهم والخروج</button>
+              </div>
+            )}
+
+            <div style={{ marginTop: '20px' }}>
+              {phase === 'waiting' && (
+                <div>
+                  <h3 className="players-title">اللاعبين ({players.length}):</h3>
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', marginBottom: '20px' }}>
+                    {players.map((p,i) => (
+                      <div key={i} className={i === 0 ? 'player-row host-row' : 'player-row'}>
+                        <span>👤 {p} {i === 0 && '👑 (المضيف)'}</span>
+                        {players[0] === playerName && p !== playerName && (
+                          <button onClick={() => kickPlayer(p)} style={{ background: 'linear-gradient(to bottom, #7f1d1d, #450a0a)', color: '#fca5a5', border: '1px solid #991b1b', padding: '5px 10px', borderRadius: '5px', cursor: 'pointer', fontWeight: 'bold', fontFamily: 'Amiri' }}>طرد ❌</button>
                         )}
                       </div>
                     ))}
-                  </>
-                )}
-              </div>
-            )}
+                  </div>
+                  {players[0] === playerName && <button onClick={startGame} className="gothic-btn btn-teal">🔥 بدء اللعبة (يجب الدخول 3)</button>}
+                </div>
+              )}
 
-            {phase === 'defense' && (
-              <div style={{ backgroundColor: '#450a0a', padding: '15px', borderRadius: '15px', border: '2px solid #ef4444' }}>
-                <h2 style={{ color: '#fca5a5' }}>⚖️ محكمة المدينة!</h2>
-                <h3 style={{ color: 'white' }}>المتهم: 🚨 {defendingPlayer} 🚨</h3>
-                <h1 style={{ color: timeLeft <= 15 ? '#ef4444' : 'white' }}>⏳ {timeLeft} ثانية</h1>
-                <p>أمامك 30 ثانية لتبرير موقفك بالدردشة وإقناعهم بسحب أصواتهم!</p>
-                {isAlive && votes[playerName] === defendingPlayer && handcuffed !== playerName && (
-                  <button onClick={withdrawVote} className="btn" style={{ backgroundColor: '#10b981', marginTop: '15px' }}>✅ اقتنعت! (سحب تصويتي)</button>
-                )}
-              </div>
-            )}
+              {phase === 'night' && (
+                <div>
+                  <h2 style={{color: '#d6d3d1'}}>🌙 الليلة رقم {nightCount}</h2>
+                  <h1 style={{ color: timeLeft <= 30 ? '#ef4444' : '#fde68a' }}>⏳ {Math.floor(timeLeft / 60)}:{timeLeft % 60 < 10 ? '0' : ''}{timeLeft % 60}</h1>
+                  
+                  {getCitizenDiscovery() && (
+                    <div style={{ background: 'linear-gradient(to bottom, #1c1917, #0c0a09)', border: '1px solid #b45309', padding: '15px', borderRadius: '10px', marginBottom: '15px' }}>
+                      <h4 style={{ color: '#fde68a', margin: '0 0 10px 0' }}>👁️ معلومات سرية (للمواطنين)</h4>
+                      {getCitizenDiscovery().map((msg, i) => <p key={i} style={{ color: '#10b981', margin: '5px 0', fontWeight: 'bold' }}>{msg}</p>)}
+                    </div>
+                  )}
 
-            {phase === 'game_over' && (
-              <div>
-                <h1>🎉 انتهاء اللعبة!</h1>
-                <h2 style={{ lineHeight: '1.6' }}>الفائز هم: <br/><span style={{ color: '#10b981', fontSize: '28px' }}>{winner}</span></h2>
-                {players[0] === playerName ? (
-                  <button onClick={restartGame} className="btn btn-start" style={{ marginTop: '20px' }}>
-                    🔄 إعادة اللعب (نفس اللاعبين)
-                  </button>
+                  {isAlive && myRole !== 'مواطن' && !hasActed && (
+                    <div style={{ borderTop: '2px solid #334155', paddingTop: '15px', marginTop: '15px' }}>
+                      <p style={{color: '#d6d3d1'}}>اختار هدفك:</p>
+                      <select onChange={e=>setSelectedTarget(e.target.value)} value={selectedTarget} className="target-select">
+                        <option value="">-- اختار لاعب --</option>
+                        {(myRole === 'مافيا' || myRole === 'شرطي') && <option value="skip">⏭️ تخطي</option>}
+                        {alivePlayers.map((p, i) => {
+                          if (p === playerName && myRole !== 'طبيب') return null; 
+                          return <option key={i} value={p}>{p === playerName ? `${p} (أنا)` : p}</option>;
+                        })}
+                      </select>
+                      <button onClick={submitNightAction} className="gothic-btn btn-teal" style={{padding: '10px'}}>تأكيد الاختيار</button>
+                    </div>
+                  )}
+                  {hasActed && <p style={{ color: '#10b981', fontWeight: 'bold', fontSize:'20px', marginTop:'15px' }}>✅ تم تسجيل اختيارك!</p>}
+                  
+                  {investigateResult && (
+                    <div style={{ background: 'linear-gradient(to bottom, #2e1065, #170535)', border: '1px solid #8b5cf6', padding: '15px', borderRadius: '10px', marginTop: '15px' }}>
+                      <p style={{ color: '#c4b5fd', fontWeight: 'bold', fontSize:'18px', margin: 0 }}>{investigateResult}</p>
+                    </div>
+                  )}
+                </div>
+              )}
+
+              {(phase === 'day_result' || phase === 'defense_result') && (
+                <div>
+                  <h2 style={{ lineHeight: '1.8', whiteSpace: 'pre-line', textAlign: 'right', background: 'linear-gradient(to right, #1c1917, #0c0a09)', padding: '20px', borderRadius: '10px', border: '1px solid #3f3f46', color: '#d6d3d1' }}>
+                    {nightLog}
+                  </h2>
+                  <h3 style={{ color: '#3b82f6', marginTop: '15px' }}>⏳ الانتقال بعد {timeLeft} ثانية...</h3>
+                </div>
+              )}
+
+              {phase === 'voting' && (
+                <div>
+                  <h2 style={{color: '#d6d3d1'}}>🗳️ التصويت الجماعي</h2>
+                  <h3 style={{ color: timeLeft <= 60 ? '#ef4444' : '#10b981' }}>⏳ الوقت المتبقي: {Math.floor(timeLeft / 60)}:{timeLeft % 60 < 10 ? '0' : ''}{timeLeft % 60}</h3>
+                  
+                  {handcuffed === playerName ? (
+                    <div style={{ background: 'linear-gradient(to bottom, #7f1d1d, #450a0a)', border: '2px dashed #ef4444', padding: '20px', borderRadius: '10px', textAlign: 'center', margin: '20px 0' }}>
+                      <h2 style={{ color: '#fca5a5' }}>🚨 أنت مقيد! 🚨</h2>
+                      <p style={{ color: '#f87171' }}>قامت الشرطة بتوقيفك. لا يمكنك التصويت اليوم!</p>
+                    </div>
+                  ) : (
+                    <>
+                      <div className={`vote-item ${hasVoted && myVoteTarget !== 'skip' ? 'dimmed' : ''} ${myVoteTarget === 'skip' ? 'selected' : ''}`} style={{ borderColor: '#b45309' }}>
+                        <div style={{ textAlign: 'right' }}>
+                          <span style={{color: '#fde68a'}}>⏭️ تخطي (الأغلبية تلغي الإعدام)</span><br/>
+                          {Object.entries(votes).filter(([v, t]) => t === 'skip').map(([v]) => <span key={v} className="voter-tag">{v}</span>)}
+                        </div>
+                        {isAlive && (
+                          myVoteTarget === 'skip' ? (
+                            <button onClick={withdrawVote} className="vote-btn" style={{background: 'linear-gradient(to bottom, #475569, #1e293b)'}}>سحب</button>
+                          ) : (
+                            <button onClick={()=>castVote('skip')} className="vote-btn" style={{background: 'linear-gradient(to bottom, #d97706, #78350f)'}}>تصويت</button>
+                          )
+                        )}
+                      </div>
+
+                      {players.map((p, i) => (
+                        <div key={i} className={`vote-item ${hasVoted && myVoteTarget !== p ? 'dimmed' : ''} ${myVoteTarget === p ? 'selected' : ''}`}>
+                          <div style={{ textAlign: 'right' }}>
+                            <span style={{color: '#d6d3d1'}}>👤 {p} {!alivePlayers.includes(p) && <span style={{color:'#ef4444'}}>(💀)</span>}</span><br/>
+                            {Object.entries(votes).filter(([v, t]) => t === p).map(([v]) => <span key={v} className="voter-tag">{v}</span>)}
+                          </div>
+                          {isAlive && alivePlayers.includes(p) && (
+                            myVoteTarget === p ? (
+                              <button onClick={withdrawVote} className="vote-btn" style={{background: 'linear-gradient(to bottom, #475569, #1e293b)'}}>سحب</button>
+                            ) : (
+                              <button onClick={()=>castVote(p)} className="vote-btn" style={{background: 'linear-gradient(to bottom, #991b1b, #450a0a)'}}>تصويت</button>
+                            )
+                          )}
+                        </div>
+                      ))}
+                    </>
+                  )}
+                </div>
+              )}
+
+              {phase === 'defense' && (
+                <div style={{ background: 'linear-gradient(to bottom, #450a0a, #280505)', padding: '20px', borderRadius: '15px', border: '2px solid #7f1d1d' }}>
+                  <h2 style={{ color: '#fca5a5', margin: 0 }}>⚖️ محكمة المدينة!</h2>
+                  <h3 style={{ color: '#d6d3d1' }}>المتهم: 🚨 {defendingPlayer} 🚨</h3>
+                  <h1 style={{ color: timeLeft <= 15 ? '#ef4444' : '#fde68a' }}>⏳ {timeLeft} ثانية</h1>
+                  <p style={{ color: '#a1a1aa' }}>أمامك 30 ثانية لتبرير موقفك بالدردشة وإقناعهم بسحب أصواتهم!</p>
+                  {isAlive && votes[playerName] === defendingPlayer && handcuffed !== playerName && (
+                    <button onClick={withdrawVote} className="gothic-btn btn-teal" style={{ marginTop: '15px', padding: '10px' }}>✅ اقتنعت! (سحب تصويتي)</button>
+                  )}
+                </div>
+              )}
+
+              {phase === 'game_over' && (
+                <div>
+                  <h1 style={{color: '#fde68a'}}>🎉 انتهاء اللعبة!</h1>
+                  <h2 style={{ lineHeight: '1.6', color: '#d6d3d1' }}>الفائز هم: <br/><span style={{ color: '#10b981', fontSize: '28px' }}>{winner}</span></h2>
+                  {players[0] === playerName ? (
+                    <button onClick={restartGame} className="gothic-btn btn-teal" style={{ marginTop: '20px' }}>
+                      🔄 إعادة اللعب
+                    </button>
+                  ) : (
+                    <p style={{ color: '#a1a1aa', marginTop: '20px' }}>ننتظر المضيف لإعادة تشغيل الغرفة...</p>
+                  )}
+                </div>
+              )}
+            </div>
+
+            {phase !== 'waiting' && phase !== 'game_over' && phase !== 'role_reveal' && phase !== 'write_will' && (
+              <div className="chat-container">
+                <div className="chat-title" style={{background: 'linear-gradient(to right, #1e293b, #0f172a)'}}>💬 الدردشة العامة</div>
+                <div className="chat-box" ref={globalChatRef}>
+                  {globalChat.map((msg, i) => (
+                    <div key={i} className={`chat-msg ${msg.sender === playerName ? 'msg-mine' : (msg.sender.includes('النظام') ? 'msg-system' : 'msg-global')}`}>
+                      <strong>{msg.sender}:</strong> {msg.text}
+                    </div>
+                  ))}
+                </div>
+                {isAlive ? (
+                  <div className="chat-input-area">
+                    <input type="text" value={globalMsg} onChange={e=>setGlobalMsg(e.target.value)} onKeyPress={e => e.key === 'Enter' && sendGlobal()} placeholder="اكتب للجميع..." className="chat-input" />
+                    <button onClick={sendGlobal} className="chat-send-btn" style={{fontFamily: 'Amiri'}}>إرسال</button>
+                  </div>
                 ) : (
-                  <p style={{ color: '#f59e0b', marginTop: '20px' }}>ننتظر المضيف لإعادة تشغيل الغرفة...</p>
+                  <p style={{ color: '#ef4444', textAlign: 'center', marginTop: '10px' }}>🚫 تم إقصاؤك ولا يمكنك التحدث.</p>
                 )}
               </div>
             )}
           </div>
-
-          {phase !== 'waiting' && phase !== 'game_over' && phase !== 'role_reveal' && phase !== 'write_will' && (
-            <div className="chat-container">
-              <div className="chat-title">💬 الدردشة العامة للمدينة</div>
-              <div className="chat-box" ref={globalChatRef}>
-                {globalChat.map((msg, i) => (
-                  <div key={i} className={`chat-msg ${msg.sender === playerName ? 'msg-mine' : (msg.sender.includes('النظام') ? 'msg-system' : 'msg-global')}`}>
-                    <strong>{msg.sender}:</strong> {msg.text}
-                  </div>
-                ))}
-              </div>
-              {isAlive ? (
-                <div className="chat-input-area">
-                  <input type="text" value={globalMsg} onChange={e=>setGlobalMsg(e.target.value)} onKeyPress={e => e.key === 'Enter' && sendGlobal()} placeholder="اكتب للجميع..." className="chat-input" />
-                  <button onClick={sendGlobal} className="chat-send-btn">إرسال</button>
-                </div>
-              ) : (
-                <p style={{ color: '#ef4444', textAlign: 'center', marginTop: '10px' }}>🚫 تم إقصاؤك ولا يمكنك التحدث.</p>
-              )}
-            </div>
-          )}
-        </div>
-      )}
+        )}
+      </div>
     </div>
   )
 }

@@ -1,183 +1,244 @@
-@import url('https://fonts.googleapis.com/css2?family=Cairo:wght@400;700;900&display=swap');
-
-* { box-sizing: border-box; font-family: 'Cairo', sans-serif; }
-
-body {
-  background-color: #0f172a;
-  color: #ffffff;
-  margin: 0;
-  display: flex;
-  justify-content: center;
-  align-items: flex-start;
-  min-height: 100vh;
-  direction: rtl;
-  padding: 20px 0;
-}
-
-.game-container {
-  background-color: #1e293b;
-  padding: 25px;
-  border-radius: 20px;
-  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.6);
-  width: 95%;
-  max-width: 550px;
-  text-align: center;
-}
-
-h1, h2, h3, p { margin: 0 0 10px 0; }
-h1 { color: #f43f5e; }
-p { color: #94a3b8; font-size: 16px; }
-
-.input-field { width: 100%; padding: 12px; margin-bottom: 15px; border: 2px solid #334155; border-radius: 10px; background-color: #0f172a; color: white; font-size: 16px; text-align: center; outline: none; }
-.btn { width: 100%; padding: 12px; font-size: 16px; font-weight: bold; border: none; border-radius: 10px; cursor: pointer; margin-bottom: 10px; transition: 0.2s; }
-.btn-create { background-color: #f43f5e; color: white; }
-.btn-join { background-color: #3b82f6; color: white; }
-.btn-start { background-color: #10b981; color: white; margin-top: 15px; }
-.btn-action { background-color: #8b5cf6; color: white; margin-top: 10px; }
-
-.role-badge { display: inline-block; padding: 6px 16px; border-radius: 20px; font-weight: bold; margin-bottom: 20px; font-size: 18px; }
-.role-مافيا { background-color: #ef4444; color: white; }
-.role-طبيب { background-color: #06b6d4; color: white; }
-.role-محقق { background-color: #f59e0b; color: white; }
-.role-مواطن { background-color: #10b981; color: white; }
-
-.target-select { width: 100%; padding: 12px; border-radius: 8px; background-color: #0f172a; color: white; font-size: 16px; margin: 10px 0; border: 1px solid #334155; }
-
-.vote-item {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  background-color: #334155;
-  padding: 12px;
-  margin: 8px 0;
-  border-radius: 8px;
-  transition: 0.3s;
-  border: 2px solid transparent;
-}
-
-/* شلنا التجميد حتى يقدر يغير صوته بس خلينا اللون يبهت للي ما مختارهم */
-.vote-item.dimmed { opacity: 0.6; }
-.vote-item.selected { border: 2px solid #10b981; background-color: #1e293b; opacity: 1; }
-
-.voter-tag { display: inline-block; font-size: 11px; background: #0f172a; padding: 2px 6px; border-radius: 4px; margin-left: 4px; color: #94a3b8; }
-.vote-btn { background-color: #ef4444; color: white; border: none; padding: 6px 12px; border-radius: 6px; cursor: pointer; font-weight: bold; }
-
-.chat-container { background-color: #0f172a; border: 1px solid #334155; border-radius: 12px; padding: 10px; margin-top: 20px; text-align: right;}
-.chat-title { font-size: 14px; color: #94a3b8; margin-bottom: 8px; border-bottom: 1px solid #334155; padding-bottom: 5px; }
-.chat-box { max-height: 150px; overflow-y: auto; display: flex; flex-direction: column; gap: 8px; margin-bottom: 10px; padding-right: 5px; }
-.chat-msg { padding: 8px 12px; border-radius: 12px; font-size: 14px; width: fit-content; max-width: 90%; word-wrap: break-word; }
-.msg-global { background-color: #334155; color: white; }
-.msg-mine { background-color: #3b82f6; color: white; align-self: flex-start; }
-.msg-mafia { background-color: #7f1d1d; color: #fca5a5; }
-.msg-system { background-color: #450a0a; color: #fca5a5; width: 100%; text-align: center; font-weight: bold;}
-.chat-input-area { display: flex; gap: 8px; }
-.chat-input { flex: 1; padding: 8px 12px; border-radius: 8px; border: 1px solid #334155; background-color: #1e293b; color: white; outline: none; }
-.chat-send-btn { background-color: #10b981; border: none; padding: 8px 15px; border-radius: 8px; color: white; cursor: pointer; font-weight: bold; }
-/* تأثيرات الكارت الـ 3D السحرية */
-.card-3d-container {
-  perspective: 1000px;
-  margin: 30px auto;
-  width: 220px;
-  height: 320px;
-}
-
-.card-3d {
-  width: 100%;
-  height: 100%;
-  position: relative;
-  transition: transform 1.2s cubic-bezier(0.8, -0.2, 0.2, 1.2); 
-  transform-style: preserve-3d;
-  animation: autoFlip 1.2s forwards 1s; 
-}
-
-@keyframes autoFlip {
-  0% { transform: rotateY(0deg); }
-  100% { transform: rotateY(180deg); }
-}
-
-.card-face {
-  position: absolute;
-  width: 100%;
-  height: 100%;
-  backface-visibility: hidden; 
-  border-radius: 15px;
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  align-items: center;
-  font-size: 26px;
-  font-weight: bold;
-  border: 3px solid #334155;
-}
-
-.card-front {
-  background: repeating-linear-gradient(45deg, #0f172a, #0f172a 10px, #1e293b 10px, #1e293b 20px);
-  color: #94a3b8;
-}
-
-.card-back {
-  transform: rotateY(180deg);
-  background: linear-gradient(135deg, #1e293b, #000000);
-  color: white;
-}
-
-.role-icon {
-  font-size: 70px;
-  margin-bottom: 15px;
-  filter: drop-shadow(0px 0px 10px rgba(255,255,255,0.2));
-}
 /* =============================== */
-/* تحسينات شاشة الموبايل والأزرار  */
+/* تصميم المافيا القوطي الجديد 🔥 */
 /* =============================== */
+@import url('https://fonts.googleapis.com/css2?family=Amiri:wght@400;700&display=swap');
+
 * {
   box-sizing: border-box;
 }
 
-.game-container {
-  width: 100%;
-  max-width: 600px;
-  margin: 0 auto;
+body {
+  margin: 0;
+  padding: 0;
+  background-color: #050505;
+  /* إذا عندك صورة الخلفية مال المدينة تمطر، تكدر تفعل هذا السطر وتخلي مسار الصورة */
+  /* background-image: url('/city-bg.jpg'); */
+  background-size: cover;
+  background-position: center;
+  background-attachment: fixed;
+  color: #e5e5e5;
+  font-family: 'Amiri', serif;
+}
+
+.gothic-wrapper {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 100vh;
   padding: 15px;
-  overflow-x: hidden;
 }
 
-.btn {
+/* الإطار الحديدي الرئيسي */
+.gothic-frame {
   width: 100%;
-  padding: 14px;
-  font-size: 16px;
-  margin-bottom: 10px;
+  max-width: 450px;
+  background: linear-gradient(to bottom, #1a1a1a, #0f0f0f);
+  border: 4px solid #3f3f46;
+  border-radius: 12px;
+  padding: 30px 20px;
+  position: relative;
+  box-shadow: 0 0 30px rgba(0, 0, 0, 0.9), inset 0 0 20px rgba(0, 0, 0, 0.8);
+}
+
+/* خطوط حمراء داكنة داخل الإطار لتقليد التصميم */
+.gothic-frame::before {
+  content: '';
+  position: absolute;
+  top: 5px; left: 5px; right: 5px; bottom: 5px;
+  border: 1px solid #7f1d1d;
   border-radius: 8px;
+  pointer-events: none;
+}
+
+/* زر الخروج من الغرفة (أعلى اليسار) */
+.btn-leave-corner {
+  position: absolute;
+  top: 10px;
+  left: 10px;
+  background: linear-gradient(to bottom, #7f1d1d, #450a0a);
+  color: #fca5a5;
+  border: 1px solid #991b1b;
+  padding: 5px 10px;
+  border-radius: 5px;
+  font-size: 12px;
+  cursor: pointer;
+  z-index: 10;
+  box-shadow: inset 0 0 5px rgba(0,0,0,0.5);
+  font-family: 'Amiri', serif;
+}
+
+/* شعار اللعبة */
+.logo-container {
+  text-align: center;
+  margin-bottom: 25px;
+}
+
+.logo-icon {
+  font-size: 50px;
+  background: #111;
+  border: 2px solid #333;
+  border-radius: 50%;
+  width: 80px;
+  height: 80px;
+  line-height: 80px;
+  margin: -60px auto 10px;
+  box-shadow: 0 5px 15px rgba(0,0,0,0.8);
+}
+
+.gothic-title {
+  font-size: 42px;
+  margin: 0;
+  background: linear-gradient(to bottom, #d97706, #78350f);
+  -webkit-background-clip: text;
+  color: transparent;
+  filter: drop-shadow(2px 2px 2px #000);
+}
+
+.gothic-subtitle {
+  text-align: center;
+  color: #a1a1aa;
+  font-size: 18px;
+  margin-bottom: 20px;
+}
+
+/* حقول الإدخال */
+.input-group {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+  margin-bottom: 20px;
+}
+
+.gothic-input {
+  width: 100%;
+  padding: 15px;
+  background: #1c1917;
+  border: 2px solid #292524;
+  color: #fde68a;
+  border-radius: 8px;
+  font-size: 18px;
+  text-align: center;
+  box-shadow: inset 0 3px 6px rgba(0,0,0,0.6);
+  font-family: 'Amiri', serif;
+  outline: none;
+}
+
+.gothic-input::placeholder {
+  color: #78716c;
+}
+
+/* الأزرار المعتقة */
+.gothic-btn {
+  width: 100%;
+  padding: 15px;
+  font-size: 20px;
   font-weight: bold;
-}
-
-.target-select {
-  width: 100%;
-  padding: 12px;
   border-radius: 8px;
+  cursor: pointer;
   margin-bottom: 15px;
-  font-size: 16px;
-  background-color: #1e293b;
-  color: white;
-  border: 1px solid #475569;
+  font-family: 'Amiri', serif;
+  text-shadow: 1px 1px 2px #000;
+  box-shadow: 0 4px 6px rgba(0,0,0,0.5), inset 0 1px 1px rgba(255,255,255,0.2);
+  transition: all 0.2s;
 }
 
-.vote-item {
+.gothic-btn:active {
+  transform: translateY(2px);
+  box-shadow: 0 1px 2px rgba(0,0,0,0.5), inset 0 1px 3px rgba(0,0,0,0.8);
+}
+
+.btn-red {
+  background: linear-gradient(to bottom, #991b1b, #450a0a);
+  border: 2px solid #b91c1c;
+  color: #fca5a5;
+}
+
+.btn-teal {
+  background: linear-gradient(to bottom, #0d9488, #0f766e, #042f2e);
+  border: 2px solid #14b8a6;
+  color: #99f6e4;
+}
+
+/* كود الغرفة (الذهبي) */
+.room-code-box {
+  background: linear-gradient(to bottom, #92400e, #451a03);
+  border: 2px solid #b45309;
+  border-radius: 8px;
+  padding: 10px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 15px;
+  font-size: 22px;
+  color: #fef3c7;
+  margin-bottom: 20px;
+  box-shadow: inset 0 0 10px rgba(0,0,0,0.5);
+}
+
+.room-code-box .code-highlight {
+  font-weight: bold;
+  color: #fde047;
+  letter-spacing: 2px;
+}
+
+/* قائمة اللاعبين */
+.players-title {
+  text-align: center;
+  color: #d6d3d1;
+  font-size: 20px;
+  margin-bottom: 10px;
+}
+
+.player-row {
+  background: linear-gradient(to right, #292524, #1c1917);
+  border: 1px solid #444;
+  padding: 12px 15px;
+  border-radius: 6px;
+  margin-bottom: 8px;
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 15px;
-  gap: 10px;
-  flex-wrap: wrap; /* لمنع تداخل النصوص بالشاشات الصغيرة */
+  color: #d6d3d1;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.5);
 }
 
-.vote-item .vote-btn {
-  width: auto;
-  min-width: 90px;
-  margin: 0;
-  padding: 10px;
-  flex-shrink: 0;
+.host-row {
+  background: linear-gradient(to right, #78350f, #451a03);
+  border: 1px solid #b45309;
+  color: #fde68a;
 }
 
-/* ألوان الأدوار الجديدة */
-.role-شرطي { background: #2563eb; color: white; border: 2px solid #60a5fa; }
-.role-محقق { background: #8b5cf6; color: white; border: 2px solid #a78bfa; } /* المحقق صار بنفسجي لتمييزه */
+/* التنسيقات القديمة الضرورية (شات، بطاقات) */
+.chat-container { margin-top: 20px; border: 2px solid #334155; border-radius: 10px; overflow: hidden; }
+.chat-title { background-color: #1e293b; padding: 10px; text-align: center; font-weight: bold; color: white; border-bottom: 1px solid #334155; }
+.chat-box { height: 180px; overflow-y: auto; padding: 10px; background-color: #0f172a; display: flex; flex-direction: column; gap: 8px; }
+.chat-msg { padding: 8px 12px; border-radius: 8px; font-size: 14px; max-width: 85%; word-wrap: break-word; }
+.msg-mine { background-color: #0ea5e9; color: white; align-self: flex-start; border-bottom-right-radius: 0; }
+.msg-global { background-color: #334155; color: white; align-self: flex-end; border-bottom-left-radius: 0; }
+.msg-mafia { background-color: #991b1b; color: white; align-self: flex-end; border-bottom-left-radius: 0; }
+.msg-system { background-color: #d97706; color: white; align-self: center; text-align: center; max-width: 95%; width: 100%; font-weight: bold; border-radius: 5px; }
+.chat-input-area { display: flex; padding: 10px; background-color: #1e293b; border-top: 1px solid #334155; gap: 5px; }
+.chat-input { flex-grow: 1; padding: 10px; border-radius: 5px; border: none; outline: none; background-color: #334155; color: white; font-family: 'Amiri', serif;}
+.chat-send-btn { padding: 10px 15px; border-radius: 5px; border: none; background-color: #0ea5e9; color: white; font-weight: bold; cursor: pointer; font-family: 'Amiri', serif;}
+.mafia-btn { background-color: #ef4444; }
+
+/* البطاقات */
+.card-3d-container { perspective: 1000px; width: 240px; height: 450px; margin: 30px auto; }
+.card-3d { width: 100%; height: 100%; position: relative; transition: transform 1s cubic-bezier(0.175, 0.885, 0.32, 1.275); transform-style: preserve-3d; }
+.card-3d.flipped { transform: rotateY(180deg); }
+.card-face { position: absolute; width: 100%; height: 100%; backface-visibility: hidden; -webkit-backface-visibility: hidden; border-radius: 15px; }
+.card-back { transform: rotateY(180deg); }
+
+/* الوصية */
+.will-overlay { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(0, 0, 0, 0.9); z-index: 9999; display: flex; justify-content: center; align-items: center; flex-direction: column; padding: 20px; animation: fadeIn 0.5s ease-in-out; }
+.will-paper { background: linear-gradient(135deg, #fef3c7, #fde68a); color: #451a03; padding: 40px 30px; border-radius: 5px; box-shadow: 0 0 50px rgba(245, 158, 11, 0.4); width: 100%; max-width: 500px; text-align: center; border: 2px solid #b45309; position: relative; font-family: 'Amiri', serif;}
+.will-paper::before { content: '📜'; font-size: 50px; position: absolute; top: -30px; left: 50%; transform: translateX(-50%); }
+.will-text { font-size: 24px; font-weight: bold; margin-top: 20px; line-height: 1.6; white-space: pre-wrap; word-wrap: break-word; }
+@keyframes fadeIn { from { opacity: 0; transform: scale(0.9); } to { opacity: 1; transform: scale(1); } }
+
+/* عناصر متفرقة */
+.vote-item { display: flex; justify-content: space-between; align-items: center; padding: 15px; background: #1c1917; border: 1px solid #444; border-radius: 8px; margin-bottom: 10px; }
+.target-select { width: 100%; padding: 12px; border-radius: 8px; margin-bottom: 15px; font-size: 16px; background-color: #1c1917; color: white; border: 1px solid #444; font-family: 'Amiri', serif;}
+.vote-btn { background-color: #0ea5e9; color: white; border: none; padding: 8px 15px; border-radius: 5px; cursor: pointer; font-weight: bold; font-family: 'Amiri', serif;}
+.voter-tag { display: inline-block; background-color: #475569; color: white; padding: 2px 8px; border-radius: 10px; font-size: 12px; margin: 2px; }
+.role-badge { background-color: #1e293b; padding: 8px 15px; border-radius: 8px; font-weight: bold; border: 2px solid #334155; }
