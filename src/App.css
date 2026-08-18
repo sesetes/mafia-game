@@ -1,5 +1,5 @@
 /* =============================== */
-/* تصميم المافيا القوطي الجديد 🔥 */
+/* تصميم المافيا القوطي الجديد ?? */
 /* =============================== */
 @import url('https://fonts.googleapis.com/css2?family=Amiri:wght@400;700&display=swap');
 
@@ -176,7 +176,7 @@ body {
 
 .will-overlay { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(0, 0, 0, 0.9); z-index: 9999; display: flex; justify-content: center; align-items: center; flex-direction: column; padding: 20px; animation: fadeIn 0.5s ease-in-out; }
 .will-paper { background: linear-gradient(135deg, #fef3c7, #fde68a); color: #451a03; padding: 40px 30px; border-radius: 5px; box-shadow: 0 0 50px rgba(245, 158, 11, 0.4); width: 100%; max-width: 500px; text-align: center; border: 2px solid #b45309; position: relative; font-family: 'Amiri', serif;}
-.will-paper::before { content: '📜'; font-size: 50px; position: absolute; top: -30px; left: 50%; transform: translateX(-50%); }
+.will-paper::before { content: '??'; font-size: 50px; position: absolute; top: -30px; left: 50%; transform: translateX(-50%); }
 .will-text { font-size: 24px; font-weight: bold; margin-top: 20px; line-height: 1.6; white-space: pre-wrap; word-wrap: break-word; }
 @keyframes fadeIn { from { opacity: 0; transform: scale(0.9); } to { opacity: 1; transform: scale(1); } }
 
@@ -187,7 +187,7 @@ body {
 .role-badge { background-color: #1e293b; padding: 8px 15px; border-radius: 8px; font-weight: bold; border: 2px solid #334155; }
 
 /* =============================== */
-/* تعديلات خاصة بشاشات الموبايل 📱 */
+/* تعديلات خاصة بشاشات الموبايل ?? */
 /* =============================== */
 @media (max-width: 500px) {
   .gothic-title {

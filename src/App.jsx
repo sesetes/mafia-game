@@ -41,6 +41,19 @@ function App() {
   const [citizenOrder, setCitizenOrder] = useState([]); 
   
   const [showAdvice, setShowAdvice] = useState(false);
+  const [menuView, setMenuView] = useState('home');
+
+  const [localMute, setLocalMute] = useState(false);
+  const [showSettingsModal, setShowSettingsModal] = useState(false);
+  const [gameSettings, setGameSettings] = useState({
+    votingTime: 600, 
+    defenseTime: 30, 
+    nightTime: 60,   
+    willTime: 30,    
+    enableWill: true,
+    enableMusic: true
+  });
+  const [tempSettings, setTempSettings] = useState({}); 
 
   const globalChatRef = useRef(null);
   const mafiaChatRef = useRef(null);
@@ -82,11 +95,13 @@ function App() {
   };
 
   useEffect(() => {
-    nightSound.current.loop = true; nightSound.current.volume = 0.6;
-    daySound.current.loop = true; daySound.current.volume = 0.4; 
-    defenseSound.current.loop = true; defenseSound.current.volume = 0.5;
-    votingSound.current.loop = true; votingSound.current.volume = 0.4; 
-  }, []);
+    const isMuted = localMute || gameSettings?.enableMusic === false;
+    nightSound.current.loop = true; nightSound.current.volume = 0.6; nightSound.current.muted = isMuted;
+    daySound.current.loop = true; daySound.current.volume = 0.4; daySound.current.muted = isMuted;
+    defenseSound.current.loop = true; defenseSound.current.volume = 0.5; defenseSound.current.muted = isMuted;
+    votingSound.current.loop = true; votingSound.current.volume = 0.4; votingSound.current.muted = isMuted;
+    gunSound.current.muted = isMuted; ambulanceSound.current.muted = isMuted; flipSound.current.muted = isMuted;
+  }, [localMute, gameSettings?.enableMusic]);
 
   const unlockAudio = () => {
     [nightSound.current, daySound.current, defenseSound.current, flipSound.current, votingSound.current].forEach(a => a.play().then(()=>a.pause()).catch(()=>{}));
@@ -124,11 +139,13 @@ function App() {
     unlockAudio();
     try {
       const randomCode = Math.floor(1000 + Math.random() * 9000).toString(); 
+      const defaultSettings = { votingTime: 600, defenseTime: 30, nightTime: 60, willTime: 30, enableWill: true, enableMusic: true };
       const docRef = await addDoc(collection(db, "rooms"), {
         roomCode: randomCode, phase: "waiting", players: [playerName], alive: [playerName],
         roles: {}, nightActions: { mafia: '', doctor: '', detective: '', police: '' }, votes: {},
         nightLog: '', winner: '', targetTime: 0, actedPlayers: [], mafiaChat: [], globalChat: [], defendingPlayer: '', nightCount: 0, 
-        wills: {}, recentlyDead: '', willNextPhase: '', willSkippers: [], handcuffed: '', citizenOrder: []
+        wills: {}, recentlyDead: '', willNextPhase: '', willSkippers: [], handcuffed: '', citizenOrder: [],
+        settings: defaultSettings
       });
       setRoomId(randomCode); setRoomDocId(docRef.id); setInRoom(true);
       sessionStorage.setItem('mafiaGameSession', JSON.stringify({ playerName, roomId: randomCode, roomDocId: docRef.id }));
@@ -152,6 +169,16 @@ function App() {
     } catch (error) { alert("خطأ بالانضمام!"); }
   }
 
+  const openSettingsModal = () => {
+    setTempSettings(gameSettings);
+    setShowSettingsModal(true);
+  };
+
+  const saveRoomSettings = async () => {
+    await updateDoc(doc(db, "rooms", roomDocId), { settings: tempSettings });
+    setShowSettingsModal(false);
+  };
+
   const startGame = async () => {
     if (players.length < 3) return alert("يحتاج 3 لاعبين!");
     let shuffled = [...players].sort(() => Math.random() - 0.5);
@@ -165,8 +192,10 @@ function App() {
     });
     
     await updateDoc(doc(db, "rooms", roomDocId), { 
-      phase: "write_will", roles: assigned, alive: players, nightActions: { mafia: '', doctor: '', detective: '', police: '' }, 
-      votes: {}, targetTime: Date.now() + 30000, actedPlayers: [], mafiaChat: [], globalChat: [], defendingPlayer: '', nightCount: 0, 
+      phase: gameSettings.enableWill === false ? "role_reveal" : "write_will", 
+      roles: assigned, alive: players, nightActions: { mafia: '', doctor: '', detective: '', police: '' }, 
+      votes: {}, targetTime: gameSettings.enableWill === false ? Date.now() + 12000 : Date.now() + ((gameSettings.willTime || 30) * 1000), 
+      actedPlayers: [], mafiaChat: [], globalChat: [], defendingPlayer: '', nightCount: 0, 
       wills: {}, recentlyDead: '', willNextPhase: '', willSkippers: [], handcuffed: '', citizenOrder: citizens 
     });
   }
@@ -187,10 +216,10 @@ function App() {
     }
   }
 
-  const triggerNight = async (docId, currentCount) => {
+  const triggerNight = async (docId, currentCount, settings) => {
     await updateDoc(doc(db, "rooms", docId), { 
       phase: 'night', 
-      targetTime: Date.now() + 180000, 
+      targetTime: Date.now() + ((settings?.nightTime || 60) * 1000), 
       actedPlayers: [], 
       nightCount: currentCount + 1, 
       nightActions: { mafia: '', doctor: '', detective: '', police: '' },
@@ -198,30 +227,26 @@ function App() {
     });
   }
 
+  const triggerVoting = async (docId, settings) => { 
+    await updateDoc(doc(db, "rooms", docId), { 
+      phase: 'voting', 
+      targetTime: Date.now() + ((settings?.votingTime || 600) * 1000), 
+      votes: {} 
+    }); 
+  }
+
   const pickRandom = (arr) => arr[Math.floor(Math.random() * arr.length)];
 
   const checkWin = (currentAlive, roles, initialCount) => {
     const mafias = currentAlive.filter(p => roles[p] === 'مافيا');
     const citizens = currentAlive.filter(p => roles[p] !== 'مافيا');
-    
     if (mafias.length === 0) return 'المواطنين 😇';
-    
     if (initialCount >= 7) {
-      if (citizens.length <= 2 && mafias.length > 0) {
-        const mafiaNames = Object.keys(roles).filter(p => roles[p] === 'مافيا').join(' ، ');
-        return `المافيا 🦹‍♂️ (${mafiaNames})`;
-      }
+      if (citizens.length <= 2 && mafias.length > 0) return `المافيا 🦹‍♂️ (${Object.keys(roles).filter(p => roles[p] === 'مافيا').join(' ، ')})`;
     } else {
-      if (citizens.length <= 1 && mafias.length > 0) {
-        const mafiaNames = Object.keys(roles).filter(p => roles[p] === 'مافيا').join(' ، ');
-        return `المافيا 🦹‍♂️ (${mafiaNames})`;
-      }
+      if (citizens.length <= 1 && mafias.length > 0) return `المافيا 🦹‍♂️ (${Object.keys(roles).filter(p => roles[p] === 'مافيا').join(' ، ')})`;
     }
-
-    if (mafias.length >= citizens.length) {
-      const mafiaNames = Object.keys(roles).filter(p => roles[p] === 'مافيا').join(' ، ');
-      return `المافيا 🦹‍♂️ (${mafiaNames})`;
-    }
+    if (mafias.length >= citizens.length) return `المافيا 🦹‍♂️ (${Object.keys(roles).filter(p => roles[p] === 'مافيا').join(' ، ')})`;
     return null;
   }
 
@@ -238,19 +263,47 @@ function App() {
     const isDoctorAlive = data.alive.some(p => data.roles[p] === 'طبيب');
     const isDetectiveAlive = data.alive.some(p => data.roles[p] === 'محقق');
 
-    const isMafiaBlocked = isMafiaAlive && data.alive.filter(p => data.roles[p] === 'مافيا').includes(handcuffedPlayer);
+    const policePlayerName = Object.keys(data.roles).find(k => data.roles[k] === 'شرطي');
+
+    const isMafiaTargetingPolice = mafia && mafia !== 'skip' && data.roles[mafia] === 'شرطي';
+    const isPoliceTargetingMafia = handcuffedPlayer && data.roles[handcuffedPlayer] === 'مافيا';
+    
+    const isMafiaBlocked = isMafiaAlive && data.alive.filter(p => data.roles[p] === 'مافيا').includes(handcuffedPlayer) && !(isMafiaTargetingPolice && isPoliceTargetingMafia);
     const isDoctorBlocked = isDoctorAlive && data.alive.filter(p => data.roles[p] === 'طبيب').includes(handcuffedPlayer);
     const isDetectiveBlocked = isDetectiveAlive && data.alive.filter(p => data.roles[p] === 'محقق').includes(handcuffedPlayer);
 
+    let someoneDied = false;
+    if (isMafiaAlive && !isMafiaBlocked && mafia && mafia !== 'skip') {
+      if (mafia === doctor && !isDoctorBlocked) {
+        // تم إنقاذه
+      } else {
+        deadPlayer = mafia;
+        someoneDied = true;
+        newAlive = newAlive.filter(p => p !== mafia);
+      }
+    }
+
+    let finalHandcuffed = handcuffedPlayer;
+    if (deadPlayer === policePlayerName && handcuffedPlayer) {
+       finalHandcuffed = ''; 
+    }
+
     if (isPoliceAlive) {
       if (handcuffedPlayer) {
-        news.push(`${counter++}. 🚨 الشرطة داهمت مقر (${handcuffedPlayer}) وقامت بتقييد حركته تماماً الليلة.`);
+        if (deadPlayer === policePlayerName) {
+          news.push(`${counter++}. 🚨 ${pickRandom([
+            "عُثر على أصفاد مكسورة في أحد الأزقة... مجرمٌ كان على وشك الاعتقال لكنه لاذ بالفرار لسبب غامض!",
+            "محاولة اعتقال فاشلة انتهت بهروب المشتبه به في ظروف غامضة!",
+            "تشير الأدلة إلى أن الشرطة كانت قريبة جداً من الإيقاع بشخص ما، لكنه اختفى فجأة ونجا من التقييد."
+          ])}`);
+        } else {
+          news.push(`${counter++}. 🚨 الشرطة داهمت مقر (${handcuffedPlayer}) وقامت بتقييد حركته تماماً الليلة.`);
+        }
       } else {
         news.push(`${counter++}. 👮‍♂️ الشرطة كانت في دورية ولم تعتقل أحداً.`);
       }
     }
 
-    let someoneDied = false;
     if (isMafiaAlive) {
       if (isMafiaBlocked || !mafia || mafia === 'skip') {
         news.push(`${counter++}. 🦹‍♂️ ${pickRandom([
@@ -264,9 +317,6 @@ function App() {
           "محاولة اغتيال فاشلة من المافيا تركت الضحية على قيد الحياة."
         ])}`);
       } else {
-        newAlive = newAlive.filter(p => p !== mafia);
-        deadPlayer = mafia;
-        someoneDied = true;
         news.push(`${counter++}. 🦹‍♂️ ${pickRandom([
           `المافيا تجرم وتستبيح دماء الأبرياء، لتستيقظ المدينة على جثة (${mafia}).`,
           `رصاصة غادرة في جنح الظلام أنهت حياة (${mafia}) بلا رحمة.`
@@ -325,11 +375,9 @@ function App() {
     await updateDoc(doc(db, "rooms", docId), {
       alive: newAlive, phase: winState ? 'game_over' : 'day_result', nightLog: logMsg,
       winner: winState || '', actedPlayers: [], targetTime: winState ? 0 : Date.now() + 20000, mafiaChat: [],
-      recentlyDead: deadPlayer, handcuffed: handcuffedPlayer 
+      recentlyDead: deadPlayer, handcuffed: finalHandcuffed 
     });
   }
-
-  const triggerVoting = async (docId) => { await updateDoc(doc(db, "rooms", docId), { phase: 'voting', targetTime: Date.now() + 600000, votes: {} }); }
 
   const performVoteResolution = async (docId, data) => {
     const voteCounts = {};
@@ -337,7 +385,7 @@ function App() {
     let highestVote = 0, accused = '', isTie = false;
     Object.entries(voteCounts).forEach(([player, count]) => { if (count > highestVote) { highestVote = count; accused = player; isTie = false; } else if (count === highestVote) isTie = true; });
     if (isTie || accused === 'skip' || accused === '') await updateDoc(doc(db, "rooms", docId), { phase: 'defense_result', nightLog: '⚖️ الأغلبية اختارت التخطي أو تعادلت الأصوات.. لا إعدام اليوم!', targetTime: Date.now() + 8000, votes: {}, actedPlayers: [], recentlyDead: '' });
-    else await updateDoc(doc(db, "rooms", docId), { phase: 'defense', defendingPlayer: accused, targetTime: Date.now() + 30000 });
+    else await updateDoc(doc(db, "rooms", docId), { phase: 'defense', defendingPlayer: accused, targetTime: Date.now() + ((data.settings?.defenseTime || 30) * 1000) });
   }
 
   const performDefenseResolution = async (docId, data) => {
@@ -376,10 +424,7 @@ function App() {
     });
   }
 
-  const castVote = async (target) => {
-    await updateDoc(doc(db, "rooms", roomDocId), { [`votes.${playerName}`]: target });
-  }
-
+  const castVote = async (target) => { await updateDoc(doc(db, "rooms", roomDocId), { [`votes.${playerName}`]: target }); }
   const withdrawVote = async () => { await updateDoc(doc(db, "rooms", roomDocId), { [`votes.${playerName}`]: deleteField() }); }
   
   const detectiveSacrifice = async () => {
@@ -393,10 +438,18 @@ function App() {
     const emoji = targetRole === 'مافيا' ? '🦹‍♂️' : targetRole === 'طبيب' ? '👨‍⚕️' : targetRole === 'شرطي' ? '👮‍♂️' : '😇';
     const sysMsg = `🚨 المحقق (${playerName}) كشف أن (${sacrificeTarget}) هو [${targetRole} ${emoji}] وخرج من اللعبة.`;
     
+    // === إصلاح الخطأ: التحقق من إعدادات الوصية للمحقق ===
+    const willEnabled = data.settings?.enableWill !== false;
+
     await updateDoc(doc(db, "rooms", roomDocId), { 
-      alive: newAlive, phase: winState ? 'game_over' : 'show_will', winner: winState || data.winner, 
-      globalChat: arrayUnion({ sender: 'النظام ⚖️', text: sysMsg }), recentlyDead: playerName,
-      willNextPhase: data.phase, targetTime: Date.now() + 20000, willSkippers: []
+      alive: newAlive, 
+      phase: winState ? 'game_over' : (willEnabled ? 'show_will' : data.phase), 
+      winner: winState || data.winner, 
+      globalChat: arrayUnion({ sender: 'النظام ⚖️', text: sysMsg }), 
+      recentlyDead: playerName,
+      willNextPhase: data.phase, 
+      targetTime: winState ? 0 : (willEnabled ? Date.now() + 20000 : data.targetTime), 
+      willSkippers: []
     });
   }
   
@@ -409,10 +462,7 @@ function App() {
         if (document.exists()) {
           const data = document.data();
           if (!data.players.includes(playerName)) {
-            sessionStorage.removeItem('mafiaGameSession');
-            setInRoom(false);
-            alert("لقد تم إخراجك من الغرفة.");
-            return;
+            sessionStorage.removeItem('mafiaGameSession'); setInRoom(false); alert("لقد تم إخراجك من الغرفة."); return;
           }
 
           setPlayers(data.players); setAlivePlayers(data.alive || []); setPhase(data.phase);
@@ -420,26 +470,16 @@ function App() {
           setTargetTime(data.targetTime || 0); setAllRoles(data.roles || {});
           setGlobalChat(data.globalChat || []); setMafiaChat(data.mafiaChat || []);
           setActedPlayers(data.actedPlayers || []); setDefendingPlayer(data.defendingPlayer || '');
-          setNightCount(data.nightCount || 0); 
-          setHandcuffed(data.handcuffed || '');
-          setCitizenOrder(data.citizenOrder || []);
+          setNightCount(data.nightCount || 0); setHandcuffed(data.handcuffed || ''); setCitizenOrder(data.citizenOrder || []);
+          setWills(data.wills || {}); setRecentlyDead(data.recentlyDead || ''); setWillSkippers(data.willSkippers || []);
           
-          setWills(data.wills || {});
-          setRecentlyDead(data.recentlyDead || '');
-          setWillSkippers(data.willSkippers || []);
-          
-          if (data.wills && data.wills[playerName]) {
-            setIsWillSaved(true);
-            setMyWill(data.wills[playerName]);
-          } else {
-            setIsWillSaved(false);
-          }
+          if (data.settings) setGameSettings(data.settings); 
 
+          if (data.wills && data.wills[playerName]) { setIsWillSaved(true); setMyWill(data.wills[playerName]); } else { setIsWillSaved(false); }
           if (data.roles && data.roles[playerName]) setMyRole(data.roles[playerName]);
           if (data.phase !== 'night') { setInvestigateResult(''); setSelectedTarget(''); }
         } else {
-           sessionStorage.removeItem('mafiaGameSession');
-           setInRoom(false);
+           sessionStorage.removeItem('mafiaGameSession'); setInRoom(false);
         }
       });
       return () => unsub();
@@ -485,28 +525,28 @@ function App() {
                 await updateDoc(doc(db, "rooms", roomDocId), { phase: 'role_reveal', targetTime: Date.now() + 12000 });
               }
               else if (phase === 'role_reveal') {
-                triggerNight(roomDocId, data.nightCount || 0);
+                triggerNight(roomDocId, data.nightCount || 0, data.settings);
               }
               else if (phase === 'night') performNightResolution(roomDocId, data);
               else if (phase === 'day_result') {
-                if (data.recentlyDead) {
+                if (data.recentlyDead && data.settings?.enableWill !== false) {
                   await updateDoc(doc(db, "rooms", roomDocId), { phase: 'show_will', willNextPhase: 'voting', targetTime: Date.now() + 20000, willSkippers: [] });
                 } else {
-                  triggerVoting(roomDocId);
+                  triggerVoting(roomDocId, data.settings);
                 }
               }
               else if (phase === 'voting') performVoteResolution(roomDocId, data);
               else if (phase === 'defense') performDefenseResolution(roomDocId, data);
               else if (phase === 'defense_result') {
-                if (data.recentlyDead) {
+                if (data.recentlyDead && data.settings?.enableWill !== false) {
                   await updateDoc(doc(db, "rooms", roomDocId), { phase: 'show_will', willNextPhase: 'night', targetTime: Date.now() + 20000, willSkippers: [] });
                 } else {
-                  triggerNight(roomDocId, data.nightCount || 0);
+                  triggerNight(roomDocId, data.nightCount || 0, data.settings);
                 }
               }
               else if (phase === 'show_will') {
-                if (data.willNextPhase === 'voting') triggerVoting(roomDocId);
-                else triggerNight(roomDocId, data.nightCount || 0);
+                if (data.willNextPhase === 'voting') triggerVoting(roomDocId, data.settings);
+                else triggerNight(roomDocId, data.nightCount || 0, data.settings);
               }
             }
           }
@@ -542,7 +582,6 @@ function App() {
     return null;
   }
 
-  // === تصغير الزوم لـ 202% بدل 215% للحفاظ على الأطراف والكتابة ===
   const getCardImageUrl = (role) => {
     if (role === 'طبيب') return "url('/doctor-card.png')";
     if (role === 'مواطن') return "url('/citizen-card.png')";
@@ -558,6 +597,53 @@ function App() {
   return (
     <div className="gothic-wrapper">
       
+      {showSettingsModal && (
+        <div className="will-overlay">
+          <div className="gothic-frame" style={{ background: '#0c0a09', zIndex: 10000, maxWidth: '400px' }}>
+             <h2 style={{color: '#fde68a', textAlign: 'center', marginBottom: '20px'}}>⚙️ إعدادات الغرفة</h2>
+             
+             <div style={{display:'flex', flexDirection:'column', gap:'15px', color: '#d6d3d1'}}>
+                <label style={{display: 'flex', justifyContent: 'space-between', alignItems: 'center'}}>
+                  وقت التصويت (بالدقائق): 
+                  <input type="number" step="0.5" min="0.5" value={tempSettings.votingTime / 60} onChange={e=>setTempSettings({...tempSettings, votingTime: Number(e.target.value) * 60})} className="gothic-input" style={{width:'100px', padding:'5px', fontSize:'16px'}}/>
+                </label>
+                
+                <label style={{display: 'flex', justifyContent: 'space-between', alignItems: 'center'}}>
+                  وقت التبرير (بالدقائق): 
+                  <input type="number" step="0.5" min="0.5" value={tempSettings.defenseTime / 60} onChange={e=>setTempSettings({...tempSettings, defenseTime: Number(e.target.value) * 60})} className="gothic-input" style={{width:'100px', padding:'5px', fontSize:'16px'}}/>
+                </label>
+                
+                <label style={{display: 'flex', justifyContent: 'space-between', alignItems: 'center'}}>
+                  وقت الليل (بالدقائق): 
+                  <input type="number" step="0.5" min="0.5" value={tempSettings.nightTime / 60} onChange={e=>setTempSettings({...tempSettings, nightTime: Number(e.target.value) * 60})} className="gothic-input" style={{width:'100px', padding:'5px', fontSize:'16px'}}/>
+                </label>
+
+                <label style={{display: 'flex', justifyContent: 'space-between', alignItems: 'center'}}>
+                  وقت الوصية (بالدقائق): 
+                  <input type="number" step="0.5" min="0.5" value={tempSettings.willTime / 60} onChange={e=>setTempSettings({...tempSettings, willTime: Number(e.target.value) * 60})} className="gothic-input" style={{width:'100px', padding:'5px', fontSize:'16px'}}/>
+                </label>
+
+                <hr style={{borderColor: '#3f3f46', margin: '10px 0'}} />
+
+                <label style={{display:'flex', alignItems:'center', gap:'10px', cursor: 'pointer'}}>
+                  <input type="checkbox" checked={tempSettings.enableWill} onChange={e=>setTempSettings({...tempSettings, enableWill: e.target.checked})} style={{width:'20px', height:'20px'}}/>
+                  تفعيل فترة الوصية عند الموت
+                </label>
+                
+                <label style={{display:'flex', alignItems:'center', gap:'10px', cursor: 'pointer'}}>
+                  <input type="checkbox" checked={tempSettings.enableMusic} onChange={e=>setTempSettings({...tempSettings, enableMusic: e.target.checked})} style={{width:'20px', height:'20px'}}/>
+                  تفعيل الموسيقى التلقائية للغرفة
+                </label>
+             </div>
+
+             <div style={{display:'flex', gap:'10px', marginTop:'25px'}}>
+                <button className="gothic-btn btn-teal" onClick={saveRoomSettings} style={{marginBottom: 0}}>حفظ الإعدادات</button>
+                <button className="gothic-btn btn-red" onClick={()=>setShowSettingsModal(false)} style={{marginBottom: 0}}>إلغاء</button>
+             </div>
+          </div>
+        </div>
+      )}
+
       {phase === 'show_will' && inRoom && (
         <div className="will-overlay">
           <div className="will-paper">
@@ -569,6 +655,16 @@ function App() {
             </button>
           </div>
         </div>
+      )}
+
+      {inRoom && (
+        <button 
+          onClick={() => setLocalMute(!localMute)} 
+          style={{ position: 'absolute', top: '15px', right: '15px', background: 'rgba(0,0,0,0.7)', border: '1px solid #444', color: '#fde68a', fontSize: '20px', cursor: 'pointer', zIndex: 50, borderRadius: '50%', width: '45px', height: '45px', display: 'flex', justifyContent: 'center', alignItems: 'center', boxShadow: '0 0 10px rgba(0,0,0,0.8)' }}
+          title="كتم/تشغيل الصوت محلياً"
+        >
+          {localMute || gameSettings?.enableMusic === false ? '🔇' : '🔊'}
+        </button>
       )}
 
       <div className="gothic-frame">
@@ -644,8 +740,6 @@ function App() {
                 
                 <div className={`card-3d-container ${showAdvice ? 'show-shadow' : ''}`}>
                   <div className={`card-3d ${showAdvice ? 'flipped' : ''}`}>
-                    
-                    {/* التعديل هنا: تصغير الزوم لـ 202% بدل 215% للحفاظ على الأطراف */}
                     <div className="card-face card-front" style={{
                       backgroundImage: crowBgUrl, backgroundSize: '202% 100%', backgroundPosition: 'left center', 
                       borderRadius: '15px', overflow: 'hidden', border: 'none', boxShadow: '0 0 15px rgba(0,0,0,0.8)'
@@ -715,9 +809,14 @@ function App() {
                     {players.map((p,i) => (
                       <div key={i} className={i === 0 ? 'player-row host-row' : 'player-row'}>
                         <span>👤 {p} {i === 0 && '👑 (المضيف)'}</span>
-                        {players[0] === playerName && p !== playerName && (
-                          <button onClick={() => kickPlayer(p)} style={{ background: 'linear-gradient(to bottom, #7f1d1d, #450a0a)', color: '#fca5a5', border: '1px solid #991b1b', padding: '5px 10px', borderRadius: '5px', cursor: 'pointer', fontWeight: 'bold', fontFamily: 'Amiri' }}>طرد ❌</button>
-                        )}
+                        <div style={{display: 'flex', gap: '5px'}}>
+                           {players[0] === playerName && i === 0 && (
+                             <button onClick={openSettingsModal} style={{ background: 'linear-gradient(to bottom, #d97706, #78350f)', color: '#fef3c7', border: '1px solid #b45309', padding: '5px 10px', borderRadius: '5px', cursor: 'pointer', fontWeight: 'bold', fontFamily: 'Amiri' }}>⚙️ الإعدادات</button>
+                           )}
+                           {players[0] === playerName && p !== playerName && (
+                             <button onClick={() => kickPlayer(p)} style={{ background: 'linear-gradient(to bottom, #7f1d1d, #450a0a)', color: '#fca5a5', border: '1px solid #991b1b', padding: '5px 10px', borderRadius: '5px', cursor: 'pointer', fontWeight: 'bold', fontFamily: 'Amiri' }}>طرد ❌</button>
+                           )}
+                        </div>
                       </div>
                     ))}
                   </div>
@@ -821,7 +920,7 @@ function App() {
                   <h2 style={{ color: '#fca5a5', margin: 0 }}>⚖️ محكمة المدينة!</h2>
                   <h3 style={{ color: '#d6d3d1' }}>المتهم: 🚨 {defendingPlayer} 🚨</h3>
                   <h1 style={{ color: timeLeft <= 15 ? '#ef4444' : '#fde68a' }}>⏳ {timeLeft} ثانية</h1>
-                  <p style={{ color: '#a1a1aa' }}>أمامك 30 ثانية لتبرير موقفك بالدردشة وإقناعهم بسحب أصواتهم!</p>
+                  <p style={{ color: '#a1a1aa' }}>أمامك {(gameSettings?.defenseTime || 30) / 60} دقيقة لتبرير موقفك وإقناعهم بسحب أصواتهم!</p>
                   {isAlive && votes[playerName] === defendingPlayer && handcuffed !== playerName && (
                     <button onClick={withdrawVote} className="gothic-btn btn-teal" style={{ marginTop: '15px', padding: '10px' }}>✅ اقتنعت! (سحب تصويتي)</button>
                   )}
